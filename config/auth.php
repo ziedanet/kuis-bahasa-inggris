@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 return [
 
     /*
@@ -42,6 +40,18 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Guard khusus login siswa (NISN + password) — dipakai form "Login Siswa" di homepage.
+        'siswa' => [
+            'driver' => 'session',
+            'provider' => 'siswa',
+        ],
+
+        // Guard khusus login kelompok (username + password) — dipakai form "Login Kelompok" di homepage.
+        'kelompok' => [
+            'driver' => 'session',
+            'provider' => 'kelompok',
+        ],
     ],
 
     /*
@@ -64,7 +74,17 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'siswa' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Siswa::class,
+        ],
+
+        'kelompok' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Kelompok::class,
         ],
 
         // 'users' => [
@@ -106,7 +126,7 @@ return [
     | Password Confirmation Timeout
     |--------------------------------------------------------------------------
     |
-    | Here you may define the number of seconds before a password confirmation
+    | Here you may define the amount of seconds before a password confirmation
     | window expires and users are asked to re-enter their password via the
     | confirmation screen. By default, the timeout lasts for three hours.
     |

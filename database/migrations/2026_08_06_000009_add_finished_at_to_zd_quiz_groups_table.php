@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('zd_quiz_images', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('zd_quiz_groups', function (Blueprint $table) {
+            $table->timestamp('finished_at')->nullable()->after('kelas_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('zd_quiz_images');
+        Schema::table('zd_quiz_groups', function (Blueprint $table) {
+            $table->dropColumn('finished_at');
+        });
     }
 };
