@@ -28,8 +28,8 @@ class FindTheWordSeeder extends Seeder
             // ================= Sesi 1 - Adjectives (CONTOH/DEMO) =================
             [
                 'session_type' => 'adjectives',
-                'title' => 'Contoh Objek Wisata 1 (Demo)',
-                'instruction' => 'Contoh soal bawaan — pilih 5 dari 10 kata sifat yang paling tepat menggambarkan gambar ini.',
+                'title' => 'Sample Destination 1 (Demo)',
+                'instruction' => 'Built-in sample question — choose 5 out of 10 adjectives that best describe this image.',
                 'order_number' => 1,
                 'image' => 'images/soal/taman-tengku-mahratu.jpg',
                 'words' => ['spacious', 'shady', 'tidy', 'fresh', 'scenic', 'noisy', 'muddy', 'pricey', 'risky', 'cramped'],
@@ -37,19 +37,19 @@ class FindTheWordSeeder extends Seeder
             ],
             [
                 'session_type' => 'adjectives',
-                'title' => 'Contoh Objek Wisata 2 (Demo)',
-                'instruction' => 'Contoh soal bawaan — pilih 5 dari 10 kata sifat yang paling tepat menggambarkan gambar ini.',
+                'title' => 'Sample Destination 2 (Demo)',
+                'instruction' => 'Built-in sample question — choose 5 out of 10 adjectives that best describe this image.',
                 'order_number' => 2,
                 'image' => 'images/soal/pantai-rupat.jpg',
                 'words' => ['tranquil', 'breezy', 'pristine', 'sunny', 'open', 'packed', 'murky', 'costly', 'risky', 'tiny'],
                 'correct' => ['tranquil', 'breezy', 'pristine', 'sunny', 'open'],
             ],
 
-            // ================= Sesi 2 - Verbs/Activities (CONTOH/DEMO) =================
+            // ================= Session 2 - Verbs/Activities (SAMPLE/DEMO) =================
             [
                 'session_type' => 'verbs',
-                'title' => 'Contoh Aktivitas 1 (Demo)',
-                'instruction' => 'Contoh soal bawaan — pilih 5 dari 10 kata kerja yang paling mungkin dilakukan di tempat ini.',
+                'title' => 'Sample Activity 1 (Demo)',
+                'instruction' => 'Built-in sample question — choose 5 out of 10 verbs that are most likely to happen at this place.',
                 'order_number' => 1,
                 'image' => 'images/soal/asia-heritage.jpg',
                 'words' => ['stroll', 'photograph', 'observe', 'admire', 'unwind', 'dive', 'trek', 'angle', 'camp', 'plow'],
@@ -57,8 +57,8 @@ class FindTheWordSeeder extends Seeder
             ],
             [
                 'session_type' => 'verbs',
-                'title' => 'Contoh Aktivitas 2 (Demo)',
-                'instruction' => 'Contoh soal bawaan — pilih 5 dari 10 kata kerja yang paling mungkin dilakukan di tempat ini.',
+                'title' => 'Sample Activity 2 (Demo)',
+                'instruction' => 'Built-in sample question — choose 5 out of 10 verbs that are most likely to happen at this place.',
                 'order_number' => 2,
                 'image' => 'images/soal/mall-ska-pekanbaru.jpg',
                 'words' => ['browse', 'dine', 'watch films', 'chill', 'wander', 'dive', 'trek', 'angle', 'camp', 'plow'],

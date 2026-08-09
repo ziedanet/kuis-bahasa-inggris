@@ -24,7 +24,7 @@ class IndividuPlayController extends Controller
 
         if (! Auth::guard('siswa')->check()) {
             return redirect()->route('quiz.home')->withFragment('user-login')
-                ->withErrors(['login' => 'Login sebagai siswa dulu buat mulai kuis "' . $quiz->title . '".']);
+                ->withErrors(['login' => 'Please sign in as a student first to start the quiz "' . $quiz->title . '".']);
         }
 
         $siswa = Auth::guard('siswa')->user();
@@ -98,7 +98,7 @@ class IndividuPlayController extends Controller
                 Rule::exists('zd_opsi_individu', 'id')->where('soal_id', $request->input('soal_id')),
             ],
         ], [
-            'opsi_id.required' => 'Pilih salah satu jawaban dulu sebelum lanjut.',
+            'opsi_id.required' => 'Please choose an answer before continuing.',
             'opsi_id.exists' => 'Pilihan jawaban tidak valid, coba lagi.',
         ]);
 

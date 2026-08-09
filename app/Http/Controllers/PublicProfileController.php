@@ -42,12 +42,12 @@ class PublicProfileController extends Controller
         ]);
 
         if (! Hash::check($data['current_password'], $account->password)) {
-            return back()->withErrors(['current_password' => 'Password lama salah.']);
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         }
 
         $account->update(['password' => $data['password']]);
 
-        return back()->with('status', 'Password berhasil diganti.');
+        return back()->with('status', 'Password changed successfully.');
     }
 
     private function currentGuard(): ?string

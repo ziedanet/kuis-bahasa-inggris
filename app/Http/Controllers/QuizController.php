@@ -42,7 +42,7 @@ class QuizController extends Controller
 
         if (! Auth::guard('kelompok')->check()) {
             return redirect()->route('quiz.home')->withFragment('user-login')
-                ->withErrors(['login' => 'Login sebagai kelompok dulu buat mulai kuis "' . $quiz->title . '".']);
+                ->withErrors(['login' => 'Please sign in as a group first to start the quiz "' . $quiz->title . '".']);
         }
 
         $kelompokAccount = Auth::guard('kelompok')->user();

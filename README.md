@@ -138,6 +138,14 @@ Karena `database/seeders/*` ikut ke-commit ke Git, dua hal ini perlu diperhatika
   ```
   Kalau tidak diisi, tetap jatuh ke default lama (`admin`/`admin`) — jadi **wajib** login & ganti password lewat menu Profil Admin begitu server sudah jalan, apalagi kalau repo-nya Public.
 
+## 14. Halaman publik sekarang berbahasa Inggris
+
+Semua yang tampil ke pengunjung/siswa/kelompok (navbar, footer, homepage, form login, halaman mulai kuis, halaman main kuis, halaman hasil, halaman Profil Saya, pesan error login) sudah diterjemahkan ke **Bahasa Inggris**. **Panel admin tetap Bahasa Indonesia** — tidak disentuh sama sekali, jadi kamu sebagai admin/guru tetap pakai antarmuka Indonesia seperti biasa.
+
+Catatan teknis: nilai string `predikat` di dalam kode (`Sangat Baik`/`Baik`/`Cukup`/`Perlu Bimbingan`) **sengaja tidak diubah** karena dipakai bareng sama Leaderboard & Dashboard admin. Yang diterjemahkan cuma tampilannya di halaman hasil publik (lewat pemetaan `Excellent`/`Good`/`Fair`/`Needs Improvement` di file blade-nya) — jadi Leaderboard admin kamu tetap normal.
+
+**Kalau kamu re-seed data katalog/demo** (`QuizCatalogSeeder`, `FindTheWordSeeder`): judul-judul kuis & soal contoh di file ini sudah ikut diterjemahkan (misal "Tebak Aktivitas Wisata" → "Guess the Tourism Activity"). Karena judul dipakai sebagai kunci pencocokan (`updateOrCreate` berdasarkan `title`), kalau kamu jalankan ulang seeder ini di server yang **sudah pernah** di-seed dengan judul Indonesia sebelumnya, hasilnya akan jadi **baris baru** (bukan update baris lama) — baris lama yang judulnya masih Bahasa Indonesia akan tetap ada di database sebagai duplikat. Ini aman (tidak merusak data), tapi kalau mau rapi, hapus manual baris lama itu lewat Admin Panel (menu Daftar Kuis Kelompok/Individu → Hapus) setelah re-seed.
+
 ## Catatan
 
 - Kalau menu admin **Kelola Soal → Tambah/Edit Soal** dipakai untuk upload gambar dan setelah simpan gambarnya kosong/rusak, jalankan `php artisan storage:link` lalu refresh (panel admin sekarang otomatis kasih peringatan kuning kalau ini belum dijalankan).

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Find the Word - Kuis Kosakata Wisata')</title>
+    <title>@yield('title', 'Find the Word - Tourism Vocabulary Quiz')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
@@ -319,7 +319,7 @@
 
         <ul class="nav-links" id="nav-links">
             <li><a href="{{ route('quiz.home') }}">Home</a></li>
-            <li><a href="{{ route('quiz.home') }}#kuis">Daftar Kuis</a></li>
+            <li><a href="{{ route('quiz.home') }}#kuis">Quiz List</a></li>
             @isset($group)
                 <li><div class="group-badge"><i class="fa-solid fa-users"></i> {{ $group->name }}</div></li>
             @endisset
@@ -328,9 +328,9 @@
             @elseif (auth('kelompok')->check())
                 <li><a href="{{ route('user.profile.edit') }}" class="group-badge" style="text-decoration: none;"><i class="fa-solid fa-people-group"></i> {{ auth('kelompok')->user()->name }}</a></li>
             @else
-                <li><a href="{{ route('quiz.home') }}#user-login">Masuk</a></li>
+                <li><a href="{{ route('quiz.home') }}#user-login">Sign In</a></li>
             @endif
-            <li><a href="{{ route('admin.login') }}" class="btn-nav-login"><i class="fa-solid fa-user-shield"></i> Login Admin</a></li>
+            <li><a href="{{ route('admin.login') }}" class="btn-nav-login"><i class="fa-solid fa-user-shield"></i> Admin Login</a></li>
         </ul>
     </nav>
 
@@ -343,28 +343,28 @@
                     <div class="logo-icon"><img src="{{ asset('images/logo-kuis.png') }}" alt="Logo Find the Word"></div>
                     <span>Find the Word</span>
                 </a>
-                <p>Kuis kelompok buat asesmen diagnostik kosakata (adjectives &amp; verbs) seputar objek wisata, sebelum masuk ke materi.</p>
+                <p>A group quiz for diagnostic vocabulary assessment (adjectives &amp; verbs) about tourist destinations, before diving into the material.</p>
             </div>
             <div class="footer-links">
-                <h4>Navigasi</h4>
+                <h4>Navigation</h4>
                 <ul>
                     <li><a href="{{ route('quiz.home') }}">Home</a></li>
-                    <li><a href="{{ route('quiz.home') }}#kuis">Daftar Kuis</a></li>
-                    <li><a href="{{ route('quiz.home') }}#user-login">Login Siswa/Kelompok</a></li>
-                    <li><a href="{{ route('admin.login') }}">Login Admin</a></li>
+                    <li><a href="{{ route('quiz.home') }}#kuis">Quiz List</a></li>
+                    <li><a href="{{ route('quiz.home') }}#user-login">Student/Group Login</a></li>
+                    <li><a href="{{ route('admin.login') }}">Admin Login</a></li>
                 </ul>
             </div>
             <div class="footer-links">
-                <h4>Tentang</h4>
+                <h4>About</h4>
                 <ul>
-                    <li>4 gambar objek wisata</li>
-                    <li>Sesi Adjectives &amp; Verbs</li>
-                    <li>Skor untuk pemetaan awal</li>
+                    <li>4 tourist destination images</li>
+                    <li>Adjectives &amp; Verbs sessions</li>
+                    <li>Score for initial mapping</li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; {{ date('Y') }} Find the Word &mdash; Asesmen Diagnostik Kosakata Wisata.
+            &copy; {{ date('Y') }} Find the Word &mdash; Tourism Vocabulary Diagnostic Assessment.
         </div>
     </footer>
 

@@ -10,7 +10,7 @@
         <span class="q-tag" style="background: {{ $image->session_type === 'adjectives' ? 'var(--primary-pink)' : 'var(--primary-cyan)' }};">
             {{ $image->session_type === 'adjectives' ? 'ADJECTIVE 🏷️' : 'VERB ⚡' }}
         </span>
-        <span class="q-counter">Gambar {{ $currentStep }} dari {{ $totalImages }}</span>
+        <span class="q-counter">Image {{ $currentStep }} of {{ $totalImages }}</span>
     </div>
 
     <div class="q-content">
@@ -18,7 +18,7 @@
             @if ($image->imageUrl())
                 <img src="{{ $image->imageUrl() }}" alt="{{ $image->title }}">
             @else
-                Gambar belum diunggah
+                Image not uploaded yet
             @endif
         </div>
         <div class="q-info">
@@ -36,7 +36,7 @@
         <input type="hidden" name="quiz_image_id" value="{{ $image->id }}">
 
         <div class="instruction-badge">
-            <span><i class="fa-solid fa-check-double"></i> Pilih tepat <strong style="color: var(--ink-yellow);">5 KATA</strong> yang sesuai:</span>
+            <span><i class="fa-solid fa-check-double"></i> Pick exactly <strong style="color: var(--ink-yellow);">5 WORDS</strong> that fit:</span>
             <span style="color: var(--ink-pink);"><span x-text="selected.length"></span> / 5</span>
         </div>
 
@@ -54,7 +54,7 @@
 
         <div class="nav-controls">
             <button type="submit" class="btn btn-next" :disabled="selected.length !== 5">
-                Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+                Next <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
     </form>

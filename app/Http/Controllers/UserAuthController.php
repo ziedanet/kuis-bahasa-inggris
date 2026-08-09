@@ -20,7 +20,7 @@ class UserAuthController extends Controller
 
         if (! Auth::guard('siswa')->attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([
-                'nisn' => 'NISN atau password salah.',
+                'nisn' => 'NISN or password is incorrect.',
             ])->onlyInput('nisn')->withFragment('user-login');
         }
 
@@ -38,7 +38,7 @@ class UserAuthController extends Controller
 
         if (! Auth::guard('kelompok')->attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([
-                'username' => 'Username atau password salah.',
+                'username' => 'Username or password is incorrect.',
             ])->onlyInput('username')->withFragment('user-login');
         }
 

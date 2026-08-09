@@ -7,14 +7,14 @@
     <div class="quiz-box">
 
     <div class="q-header">
-        <span class="q-tag" style="background: var(--primary-lime);">SOAL INDIVIDU 📝</span>
-        <span class="q-counter">Soal {{ $currentStep }} dari {{ $totalSoal }}</span>
+        <span class="q-tag" style="background: var(--primary-lime);">INDIVIDUAL QUESTION 📝</span>
+        <span class="q-counter">Question {{ $currentStep }} of {{ $totalSoal }}</span>
     </div>
 
     <div class="q-content" style="{{ $soal->gambarUrl() ? '' : 'grid-template-columns: 1fr;' }}">
         @if ($soal->gambarUrl())
             <div class="img-wrapper">
-                <img src="{{ $soal->gambarUrl() }}" alt="Gambar soal">
+                <img src="{{ $soal->gambarUrl() }}" alt="Question image">
             </div>
         @endif
         <div class="q-info" style="justify-content: center;">
@@ -31,7 +31,7 @@
         <input type="hidden" name="soal_id" value="{{ $soal->id }}">
 
         <div class="instruction-badge">
-            <span><i class="fa-solid fa-circle-check"></i> Pilih <strong style="color: var(--ink-yellow);">1 JAWABAN</strong> yang paling tepat:</span>
+            <span><i class="fa-solid fa-circle-check"></i> Choose the <strong style="color: var(--ink-yellow);">1 ANSWER</strong> that fits best:</span>
         </div>
 
         <div class="word-grid" style="grid-template-columns: 1fr;">
@@ -45,7 +45,7 @@
 
         <div class="nav-controls">
             <button type="submit" class="btn btn-next">
-                Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+                Next <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
     </form>
