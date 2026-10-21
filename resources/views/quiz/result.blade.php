@@ -64,8 +64,8 @@
     </article>
 
     <div class="final-actions">
-        <a href="{{ route('quiz.home') }}" class="btn btn-sun">
-            Back to home <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg>
+        <a href="{{ route('quiz.landing', $quiz) }}" class="btn btn-sun">
+            Back to quiz start <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg>
         </a>
     </div>
 </section>

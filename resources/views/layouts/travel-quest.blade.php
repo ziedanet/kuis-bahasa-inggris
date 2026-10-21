@@ -20,6 +20,9 @@
                 <span>Travel Quest</span>
             </a>
             <div class="top-right">
+                <a href="{{ route('quiz.home') }}" class="btn btn-ghost btn-sm">
+                    <svg class="ico" aria-hidden="true"><use href="#i-home"/></svg> Home
+                </a>
                 @if (auth('kelompok')->check())
                     <span class="team-pill">
                         <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
