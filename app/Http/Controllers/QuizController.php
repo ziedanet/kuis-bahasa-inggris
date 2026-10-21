@@ -124,7 +124,6 @@ class QuizController extends Controller
                     'answer' => $reviewAnswer,
                     'hasNext' => (bool) $upcoming,
                     'nextNewSession' => $upcoming && $upcoming->session_type !== $reviewImage->session_type,
-                    'progress' => $this->progressData($quiz, $group, null),
                 ]);
             }
         }
@@ -160,45 +159,7 @@ class QuizController extends Controller
             'answer' => null,
             'hasNext' => true,
             'nextNewSession' => false,
-            'progress' => $this->progressData($quiz, $group, $nextImage->id),
         ]);
-    }
-
-    /**
-     * Ringkasan progres: status tiap foto (benar semua / sebagian / salah / sekarang / belum),
-     * jumlah dijawab & belum, kata benar, dan skor sementara (0-100).
-     */
-    private function progressData(Quiz $quiz, QuizGroup $group, ?int $currentId): array
-    {
-        $images = QuizImage::where('quiz_id', $quiz->id)
-            ->where('is_active', true)
-            ->orderByRaw("CASE WHEN session_type = 'adjectives' THEN 0 ELSE 1 END")
-            ->orderBy('order_number')
-            ->get(['id']);
-
-        $answers = $group->answers()->get()->keyBy('quiz_image_id');
-
-        $items = $images->values()->map(function ($img, int $i) use ($answers, $currentId) {
-            $a = $answers->get($img->id);
-            $state = $a
-                ? ($a->correct_count >= 5 ? 'ok' : ($a->correct_count > 0 ? 'part' : 'bad'))
-                : ($img->id === $currentId ? 'now' : 'todo');
-
-            return ['n' => $i + 1, 'state' => $state];
-        })->all();
-
-        $total = $images->count();
-        $correctWords = (int) $answers->sum('correct_count');
-        $maxWords = max(1, $total * 5);
-
-        return [
-            'items' => $items,
-            'answered' => $answers->count(),
-            'remaining' => max(0, $total - $answers->count()),
-            'correctWords' => $correctWords,
-            'wrongWords' => $answers->count() * 5 - $correctWords,
-            'score' => round($correctWords / $maxWords * 100, 1),
-        ];
     }
 
     /**

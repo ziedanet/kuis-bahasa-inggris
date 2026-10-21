@@ -78,36 +78,11 @@ class IndividuPlayController extends Controller
             return redirect()->route('quiz.individu.landing', $quiz);
         }
 
-        $answers = $attempt->answers()->get()->keyBy('soal_id');
-        $answeredSoalIds = $answers->keys();
+        $answeredSoalIds = $attempt->answers()->pluck('soal_id');
 
         // Urutan soal diacak per peserta (stabil selama percobaan ini, berubah tiap "Try again").
         $ordered = $this->orderedSoal($quiz, $attempt);
         $totalSoal = $ordered->count();
-
-        // Habis menjawab: tampilkan benar/salah soal itu dulu (sekali, lewat flash session).
-        $reviewId = session('review_soal_id');
-        if ($reviewId && $answers->has($reviewId)) {
-            $reviewSoal = $ordered->firstWhere('id', $reviewId);
-
-            if ($reviewSoal) {
-                $reviewAnswer = $answers[$reviewId];
-
-                return view('quiz.individu-play', [
-                    'quiz' => $quiz,
-                    'attempt' => $attempt->loadMissing('kelas'),
-                    'soal' => $reviewSoal,
-                    'opsiList' => $this->shuffledOpsi($reviewSoal, $attempt),
-                    'currentStep' => $ordered->search(fn ($item) => $item->id === $reviewSoal->id) + 1,
-                    'totalSoal' => $totalSoal,
-                    'isLast' => $answeredSoalIds->count() >= $totalSoal,
-                    'mode' => 'review',
-                    'answer' => $reviewAnswer,
-                    'progress' => $this->progressData($ordered, $answers, null, $attempt),
-                ]);
-            }
-        }
-
         $nextSoal = $ordered->first(fn (SoalIndividu $item) => ! $answeredSoalIds->contains($item->id));
 
         if (! $nextSoal) {
@@ -118,18 +93,17 @@ class IndividuPlayController extends Controller
             return redirect()->route('quiz.individu.result', $quiz);
         }
 
+        $currentStep = $answeredSoalIds->count() + 1;
+
         return view('quiz.individu-play', [
             'quiz' => $quiz,
             'attempt' => $attempt->loadMissing('kelas'),
             'soal' => $nextSoal,
             // Pilihan juga diacak per peserta; huruf A-D mengikuti urutan yang ditampilkan.
             'opsiList' => $this->shuffledOpsi($nextSoal, $attempt),
-            'currentStep' => $ordered->search(fn ($item) => $item->id === $nextSoal->id) + 1,
+            'currentStep' => $currentStep,
             'totalSoal' => $totalSoal,
-            'isLast' => $answeredSoalIds->count() + 1 >= $totalSoal,
-            'mode' => 'play',
-            'answer' => null,
-            'progress' => $this->progressData($ordered, $answers, $nextSoal->id, $attempt),
+            'isLast' => $currentStep >= $totalSoal,
         ]);
     }
 
@@ -173,9 +147,6 @@ class IndividuPlayController extends Controller
         ]);
         $record->deleted_at = null;
         $record->save();
-
-        // Tampilkan benar/salah soal ini di halaman berikutnya.
-        session()->flash('review_soal_id', $soal->id);
 
         return redirect()->route('quiz.individu.play', $quiz);
     }
@@ -261,32 +232,6 @@ class IndividuPlayController extends Controller
     private function shuffleSeed(IndividuAttempt $attempt): int
     {
         return (int) (($attempt->id * 1000003 + $attempt->created_at->timestamp) % 2147483647);
-    }
-
-    /**
-     * Ringkasan progres buat panel di atas soal: status tiap nomor, jumlah benar/salah/belum, skor sementara.
-     *
-     * @return array{items: array, answered: int, correct: int, wrong: int, remaining: int, score: float}
-     */
-    private function progressData($ordered, $answers, ?int $currentId, IndividuAttempt $attempt): array
-    {
-        $items = $ordered->values()->map(fn (SoalIndividu $soal, int $i) => [
-            'n' => $i + 1,
-            'state' => $answers->has($soal->id)
-                ? ($answers[$soal->id]->is_correct ? 'ok' : 'bad')
-                : ($soal->id === $currentId ? 'now' : 'todo'),
-        ])->all();
-
-        $correct = $answers->where('is_correct', true)->count();
-
-        return [
-            'items' => $items,
-            'answered' => $answers->count(),
-            'correct' => $correct,
-            'wrong' => $answers->count() - $correct,
-            'remaining' => max(0, $ordered->count() - $answers->count()),
-            'score' => $attempt->scoreOn100(),
-        ];
     }
 
     /** Semua soal aktif kuis ini dalam urutan acak milik peserta. */
