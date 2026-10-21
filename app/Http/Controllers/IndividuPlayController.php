@@ -80,13 +80,9 @@ class IndividuPlayController extends Controller
 
         $answeredSoalIds = $attempt->answers()->pluck('soal_id');
 
-        $nextSoal = SoalIndividu::where('quiz_id', $quiz->id)
-            ->where('is_active', true)
-            ->whereNotIn('id', $answeredSoalIds)
-            ->orderBy('order_number')
-            ->orderBy('id')
-            ->with(['opsi' => fn ($query) => $query->orderBy('id')])
-            ->first();
+        // Urutan soal diacak per peserta (stabil selama percobaan ini, berubah tiap "Try again").
+        $ordered = $this->orderedSoal($quiz, $attempt);
+        $nextSoal = $ordered->first(fn (SoalIndividu $item) => ! $answeredSoalIds->contains($item->id));
 
         if (! $nextSoal) {
             if (! $attempt->finished_at) {
@@ -96,14 +92,14 @@ class IndividuPlayController extends Controller
             return redirect()->route('quiz.individu.result', $quiz);
         }
 
-        $totalSoal = SoalIndividu::where('quiz_id', $quiz->id)->where('is_active', true)->count();
+        $totalSoal = $ordered->count();
 
         return view('quiz.individu-play', [
             'quiz' => $quiz,
             'attempt' => $attempt->loadMissing('kelas'),
             'soal' => $nextSoal,
-            // Urutan tetap (A-D mengikuti urutan input admin) supaya huruf di halaman hasil konsisten.
-            'opsiList' => $nextSoal->opsi->values(),
+            // Pilihan juga diacak per peserta; huruf A-D mengikuti urutan yang ditampilkan.
+            'opsiList' => $this->shuffledOpsi($nextSoal, $attempt),
             'currentStep' => $answeredSoalIds->count() + 1,
             'totalSoal' => $totalSoal,
             'isLast' => $answeredSoalIds->count() + 1 >= $totalSoal,
@@ -168,11 +164,19 @@ class IndividuPlayController extends Controller
         }
 
         $attempt->load('kelas');
+
+        // Ulasan memakai urutan soal & huruf pilihan yang sama persis dengan yang dilihat peserta.
+        $order = $this->orderedSoal($quiz, $attempt)->pluck('id')->values()->all();
         $answers = $attempt->answers()
             ->with(['soal.opsi' => fn ($query) => $query->orderBy('id'), 'opsi'])
             ->get()
             ->filter(fn ($answer) => $answer->soal)
-            ->sortBy(fn ($answer) => $answer->soal->order_number)
+            ->each(fn ($answer) => $answer->soal->setRelation('opsi', $this->shuffledOpsi($answer->soal, $attempt)))
+            ->sortBy(function ($answer) use ($order) {
+                $pos = array_search($answer->soal_id, $order, true);
+
+                return $pos === false ? PHP_INT_MAX : $pos;
+            })
             ->values();
 
         $scoreOn100 = $attempt->scoreOn100();
@@ -218,6 +222,33 @@ class IndividuPlayController extends Controller
         session()->forget($this->sessionKey($quiz));
 
         return redirect()->route('quiz.home');
+    }
+
+    /**
+     * Seed acak per percobaan: stabil selama peserta mengerjakan (refresh tidak
+     * mengubah urutan), tapi berubah setiap "Try again" karena created_at di-reset.
+     */
+    private function shuffleSeed(IndividuAttempt $attempt): int
+    {
+        return (int) (($attempt->id * 1000003 + $attempt->created_at->timestamp) % 2147483647);
+    }
+
+    /** Semua soal aktif kuis ini dalam urutan acak milik peserta. */
+    private function orderedSoal(Quiz $quiz, IndividuAttempt $attempt)
+    {
+        return SoalIndividu::where('quiz_id', $quiz->id)
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->with(['opsi' => fn ($query) => $query->orderBy('id')])
+            ->get()
+            ->shuffle($this->shuffleSeed($attempt))
+            ->values();
+    }
+
+    /** Pilihan jawaban satu soal dalam urutan acak milik peserta (A-D mengikuti urutan ini). */
+    private function shuffledOpsi(SoalIndividu $soal, IndividuAttempt $attempt)
+    {
+        return $soal->opsi->sortBy('id')->values()->shuffle($this->shuffleSeed($attempt) + $soal->id)->values();
     }
 
     private function ensureIndividu(Quiz $quiz): void
