@@ -20,11 +20,6 @@
                 <span>Travel Quest</span>
             </a>
             <div class="top-right">
-                @unless ($__env->hasSection('hide-teacher'))
-                    <a href="{{ route('admin.login') }}" class="btn btn-ghost btn-sm">
-                        <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Teacher
-                    </a>
-                @endunless
                 @if (auth('kelompok')->check())
                     <span class="team-pill">
                         <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>

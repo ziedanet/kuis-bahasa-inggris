@@ -20,10 +20,20 @@
 
         <form class="checkin" method="POST" action="{{ route('quiz.start', $quiz) }}">
             @csrf
-            <label for="team-name">Team name</label>
-            <input type="text" id="team-name" value="{{ $kelompokAccount->name }}" readonly>
-            @if ($kelompokAccount->kelas)
-                <p class="sync">Class: {{ $kelompokAccount->kelas->name }}</p>
+            @if ($kelompokAccount)
+                <label for="team-name">Team name</label>
+                <input type="text" id="team-name" value="{{ $kelompokAccount->name }}" readonly>
+                @if ($kelompokAccount->kelas)
+                    <p class="sync">Class: {{ $kelompokAccount->kelas->name }}</p>
+                @endif
+            @else
+                <label for="team-username">Team username</label>
+                <input type="text" id="team-username" name="username" value="{{ old('username') }}"
+                       placeholder="Your team username" autocomplete="username" required>
+                <label for="team-password">Password</label>
+                <input type="password" id="team-password" name="password"
+                       placeholder="Your team password" autocomplete="current-password" required>
+                <p class="sync">Sign in with the account your teacher gave your team.</p>
             @endif
             @if ($errors->any())
                 <p class="err">{{ $errors->first() }}</p>

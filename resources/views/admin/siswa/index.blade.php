@@ -19,7 +19,7 @@
         <label style="font-weight: 800; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-filter" style="color: var(--primary-pink);"></i> Filter:
         </label>
-        <select name="kelas" onchange="this.form.submit()" style="padding: 10px 16px; background: #0f172a; color: #fff; border: 2px solid #000; border-radius: 10px; font-weight: 700; width: 220px;">
+        <select name="kelas" onchange="this.form.submit()" class="filter-select" style="width: 220px;">
             <option value="">Semua Kelas</option>
             @foreach ($kelasList as $kelasOption)
                 <option value="{{ $kelasOption->id }}" @selected((string) $kelasFilter === (string) $kelasOption->id)>
@@ -27,7 +27,7 @@
                 </option>
             @endforeach
         </select>
-        <select name="jenis_kelamin" onchange="this.form.submit()" style="padding: 10px 16px; background: #0f172a; color: #fff; border: 2px solid #000; border-radius: 10px; font-weight: 700; width: 200px;">
+        <select name="jenis_kelamin" onchange="this.form.submit()" class="filter-select" style="width: 200px;">
             <option value="">Semua Jenis Kelamin</option>
             <option value="1" @selected($jkFilter === '1')>Laki-Laki</option>
             <option value="0" @selected($jkFilter === '0')>Perempuan</option>
@@ -65,7 +65,7 @@
                         @if ($siswa->fotoUrl())
                             <img src="{{ $siswa->fotoUrl() }}" class="thumb">
                         @else
-                            <div class="thumb" style="display:flex; align-items:center; justify-content:center; background:#0f172a; color:var(--text-muted);">
+                            <div class="thumb" style="display:flex; align-items:center; justify-content:center; background:var(--surface-2); color:var(--text-muted);">
                                 <i class="fa-solid fa-user"></i>
                             </div>
                         @endif

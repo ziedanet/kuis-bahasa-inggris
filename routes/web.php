@@ -83,6 +83,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/soal-individu/{soal}', [SoalIndividuController::class, 'destroy'])->name('soal-individu.destroy');
 
         Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+        Route::get('/leaderboard/kelompok/{group}', [LeaderboardController::class, 'showKelompok'])->name('leaderboard.kelompok.show');
+        Route::get('/leaderboard/individu/{attempt}', [LeaderboardController::class, 'showIndividu'])->name('leaderboard.individu.show');
         Route::delete('/leaderboard/kelompok/{group}', [LeaderboardController::class, 'destroyKelompok'])->name('leaderboard.kelompok.destroy');
         Route::delete('/leaderboard/individu/{attempt}', [LeaderboardController::class, 'destroyIndividu'])->name('leaderboard.individu.destroy');
 

@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="alert-box alert-error" style="background: rgba(250, 204, 21, 0.1); color: var(--primary-yellow); border-color: var(--primary-yellow);">
+<div class="alert-box alert-error" style="background: var(--hl); color: var(--on-sun); border-color: var(--sun);">
     <i class="fa-solid fa-triangle-exclamation"></i> Mengubah kata/kunci jawaban akan menghapus jawaban kelompok yang sudah mengerjakan soal ini.
 </div>
 

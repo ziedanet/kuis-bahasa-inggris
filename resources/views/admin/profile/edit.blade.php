@@ -31,7 +31,7 @@
             <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
         </div>
 
-        <hr style="border: none; border-top: 2px dashed #334155; margin: 24px 0;">
+        <hr style="border: none; border-top: 2px dashed var(--line); margin: 24px 0;">
 
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
             Isi bagian ini kalau mau ganti password. Kosongkan kalau tidak.

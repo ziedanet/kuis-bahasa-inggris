@@ -15,7 +15,7 @@
 @section('content')
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon" style="background: var(--primary-yellow);"><i class="fa-solid fa-gamepad"></i></div>
+        <div class="stat-icon" style="background: var(--sun); color: var(--on-sun);"><i class="fa-solid fa-gamepad"></i></div>
         <div class="stat-info"><h4>Total Kuis</h4><span>{{ $totalKuis }}</span></div>
     </div>
     <div class="stat-card">
@@ -23,7 +23,7 @@
         <div class="stat-info"><h4>Total Soal</h4><span>{{ $totalSoal }}</span></div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background: var(--primary-pink); color: #fff;"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-icon" style="background: var(--primary-pink);"><i class="fa-solid fa-users"></i></div>
         <div class="stat-info"><h4>Peserta Selesai</h4><span>{{ $pesertaSelesai }}</span></div>
     </div>
 </div>
@@ -75,7 +75,7 @@
                         label: 'Kelompok',
                         data: @json($participationCounts),
                         backgroundColor: color('--primary-cyan'),
-                        borderColor: '#000',
+                        borderColor: color('--surface'),
                         borderWidth: 2,
                         borderRadius: 8,
                     }],
@@ -84,8 +84,8 @@
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } },
-                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: color('--ink-soft') }, grid: { color: color('--line') } },
+                        x: { ticks: { color: color('--ink-soft') }, grid: { display: false } },
                     },
                 },
             });
@@ -106,13 +106,13 @@
                             color('--primary-yellow'),
                             color('--primary-pink'),
                         ],
-                        borderColor: '#000',
+                        borderColor: color('--surface'),
                         borderWidth: 2,
                     }],
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc' } } },
+                    plugins: { legend: { position: 'bottom', labels: { color: color('--ink') } } },
                 },
             });
         }

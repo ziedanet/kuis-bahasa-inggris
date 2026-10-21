@@ -40,11 +40,7 @@ class QuizController extends Controller
             abort(404);
         }
 
-        if (! Auth::guard('kelompok')->check()) {
-            return redirect()->route('quiz.home')->withFragment('user-login')
-                ->withErrors(['login' => 'Please sign in as a group first to start the quiz "' . $quiz->title . '".']);
-        }
-
+        // Halaman ini boleh dibuka tanpa login; login diminta saat tombol "Start" ditekan.
         $kelompokAccount = Auth::guard('kelompok')->user();
 
         $activeImages = QuizImage::where('quiz_id', $quiz->id)->where('is_active', true);
@@ -63,8 +59,20 @@ class QuizController extends Controller
             abort(404);
         }
 
+        // Belum login? Minta username & password kelompok dulu, lalu langsung lanjut mulai.
         if (! Auth::guard('kelompok')->check()) {
-            return redirect()->route('quiz.home')->withFragment('user-login');
+            $credentials = $request->validate([
+                'username' => ['required', 'string'],
+                'password' => ['required', 'string'],
+            ]);
+
+            if (! Auth::guard('kelompok')->attempt($credentials, true)) {
+                return back()->withErrors([
+                    'username' => 'Username or password is incorrect.',
+                ])->onlyInput('username');
+            }
+
+            $request->session()->regenerate();
         }
 
         $kelompokAccount = Auth::guard('kelompok')->user();

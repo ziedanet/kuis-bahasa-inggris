@@ -17,7 +17,7 @@
         <label style="font-weight: 800; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-filter" style="color: var(--primary-pink);"></i> Pilih Kuis Dikelola:
         </label>
-        <select name="quiz" onchange="this.form.submit()" style="padding: 10px 16px; background: #0f172a; color: #fff; border: 2px solid #000; border-radius: 10px; font-weight: 700; width: 300px;">
+        <select name="quiz" onchange="this.form.submit()" class="filter-select" style="width: 300px;">
             @forelse ($quizzes as $quiz)
                 <option value="{{ $quiz->id }}" @selected($selectedQuiz && $selectedQuiz->id === $quiz->id)>
                     {{ $quiz->title }} ({{ $quiz->category_label }})

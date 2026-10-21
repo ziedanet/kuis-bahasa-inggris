@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="min-height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div class="panel-card" style="max-width: 380px; width: 100%; box-shadow: 8px 8px 0px #000;">
+    <div class="panel-card" style="max-width: 380px; width: 100%; box-shadow: var(--shadow);">
         <div style="text-align: center; margin-bottom: 24px;">
             <div class="brand-icon" style="margin: 0 auto 12px;"><img src="{{ asset('images/logo-kuis.png') }}" alt="Logo Find the Word"></div>
             <h1 style="font-size: 1.3rem;">Admin &middot; Find the Word</h1>

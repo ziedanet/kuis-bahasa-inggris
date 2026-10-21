@@ -19,7 +19,7 @@
         <label style="font-weight: 800; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-filter" style="color: var(--primary-pink);"></i> Filter:
         </label>
-        <select name="kelas" onchange="this.form.submit()" style="padding: 10px 16px; background: #0f172a; color: #fff; border: 2px solid #000; border-radius: 10px; font-weight: 700; width: 220px;">
+        <select name="kelas" onchange="this.form.submit()" class="filter-select" style="width: 220px;">
             <option value="">Semua Kelas</option>
             @foreach ($kelasList as $kelasOption)
                 <option value="{{ $kelasOption->id }}" @selected((string) $kelasFilter === (string) $kelasOption->id)>

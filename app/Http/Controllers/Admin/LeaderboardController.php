@@ -4,17 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\IndividuAttempt;
+use App\Models\Kelompok;
 use App\Models\Quiz;
 use App\Models\QuizGroup;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LeaderboardController extends Controller
 {
+    /** Maksimal baris "Waiting" yang ditampilkan di bawah peringkat. */
+    private const WAITING_LIMIT = 40;
+
     /**
      * Papan peringkat hasil pengisian kuis, dipisah kelompok & individu.
      * Urutan: skor tertinggi dulu, kalau skor sama yang waktu pengerjaannya paling
-     * singkat menang.
+     * singkat menang. Halaman ini auto-refresh (lihat ?partial=1) buat ditampilkan di monitor.
      */
     public function index(Request $request)
     {
@@ -25,51 +30,55 @@ class LeaderboardController extends Controller
             ->orderBy('order_number')
             ->get();
 
-        $rows = collect();
+        [$rows, $waiting, $waitingTotal] = $tipe === 'kelompok'
+            ? $this->kelompokBoard($quizId)
+            : $this->individuBoard($quizId);
 
-        // Urutan & tampilan skor pakai scoreOn100() (0-100), bukan skor mentah —
-        // supaya kuis yang jumlah soalnya beda-beda tetap adil dibandingkan,
-        // termasuk waktu filter "Semua Kuis" yang gabung banyak kuis sekaligus.
-        if ($tipe === 'kelompok') {
-            $rows = QuizGroup::with(['quiz', 'kelas'])
-                ->withSum('answers', 'score')
-                ->whereNotNull('finished_at')
-                ->whereHas('quiz', fn ($query) => $query->where('is_kelompok', true))
-                ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
-                ->get()
-                ->sort(function (QuizGroup $a, QuizGroup $b) {
-                    $scoreA = $a->scoreOn100();
-                    $scoreB = $b->scoreOn100();
+        $data = compact('rows', 'waiting', 'waitingTotal', 'quizList', 'tipe', 'quizId');
 
-                    if ($scoreA !== $scoreB) {
-                        return $scoreB <=> $scoreA;
-                    }
-
-                    return ($a->durationSeconds() ?? PHP_INT_MAX) <=> ($b->durationSeconds() ?? PHP_INT_MAX);
-                })
-                ->values();
+        // Dipanggil JS tiap 30 detik: kirim isi papan saja, tanpa layout.
+        if ($request->boolean('partial')) {
+            return view('admin.leaderboard._rows', $data);
         }
 
-        if ($tipe === 'individu') {
-            $rows = IndividuAttempt::with(['quiz', 'siswa.kelas'])
-                ->withSum('answers', 'score')
-                ->whereNotNull('finished_at')
-                ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
-                ->get()
-                ->sort(function (IndividuAttempt $a, IndividuAttempt $b) {
-                    $scoreA = $a->scoreOn100();
-                    $scoreB = $b->scoreOn100();
+        return view('admin.leaderboard.index', $data);
+    }
 
-                    if ($scoreA !== $scoreB) {
-                        return $scoreB <=> $scoreA;
-                    }
+    /**
+     * Rincian jawaban satu kelompok: kata mana yang benar & salah per foto.
+     */
+    public function showKelompok(QuizGroup $group)
+    {
+        $group->load(['quiz', 'kelas'])->loadSum('answers', 'score');
 
-                    return ($a->durationSeconds() ?? PHP_INT_MAX) <=> ($b->durationSeconds() ?? PHP_INT_MAX);
-                })
-                ->values();
-        }
+        $answers = $group->answers()
+            ->with('image.words')
+            ->get()
+            ->filter(fn ($answer) => $answer->image)
+            ->sortBy(fn ($answer) => [
+                $answer->image->session_type === 'adjectives' ? 0 : 1,
+                $answer->image->order_number,
+            ])
+            ->values();
 
-        return view('admin.leaderboard.index', compact('rows', 'quizList', 'tipe', 'quizId'));
+        return view('admin.leaderboard.show-kelompok', compact('group', 'answers'));
+    }
+
+    /**
+     * Rincian jawaban satu siswa: pilihan mana yang benar & salah per soal.
+     */
+    public function showIndividu(IndividuAttempt $attempt)
+    {
+        $attempt->load(['quiz', 'siswa.kelas'])->loadSum('answers', 'score');
+
+        $answers = $attempt->answers()
+            ->with(['soal.opsi', 'opsi'])
+            ->get()
+            ->filter(fn ($answer) => $answer->soal)
+            ->sortBy(fn ($answer) => $answer->soal->order_number)
+            ->values();
+
+        return view('admin.leaderboard.show-individu', compact('attempt', 'answers'));
     }
 
     /**
@@ -103,5 +112,93 @@ class LeaderboardController extends Controller
         });
 
         return back()->with('status', "Riwayat kuis {$name} dihapus. Siswa ini bisa mengisi kuis lagi.");
+    }
+
+    /**
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection, 2: int}
+     */
+    private function kelompokBoard($quizId): array
+    {
+        // Urutan & tampilan skor pakai scoreOn100() (0-100), bukan skor mentah —
+        // supaya kuis yang jumlah soalnya beda-beda tetap adil dibandingkan,
+        // termasuk waktu filter "Semua Kuis" yang gabung banyak kuis sekaligus.
+        $rows = QuizGroup::with(['quiz', 'kelas'])
+            ->withSum('answers', 'score')
+            ->whereNotNull('finished_at')
+            ->whereHas('quiz', fn ($query) => $query->where('is_kelompok', true))
+            ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
+            ->get()
+            ->sort(fn (QuizGroup $a, QuizGroup $b) => $this->compare($a, $b))
+            ->values();
+
+        // Akun kelompok yang belum selesai: "Waiting" (belum mulai) atau "Playing" (masih jalan).
+        $playing = QuizGroup::whereNull('finished_at')
+            ->whereNotNull('kelompok_id')
+            ->whereHas('quiz', fn ($query) => $query->where('is_kelompok', true))
+            ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
+            ->pluck('id', 'kelompok_id');
+
+        $waitingQuery = Kelompok::with('kelas')
+            ->whereNotIn('id', $rows->pluck('kelompok_id')->filter()->all())
+            ->orderBy('name');
+
+        $waitingTotal = (clone $waitingQuery)->count();
+        $waiting = $waitingQuery->limit(self::WAITING_LIMIT)->get()->map(fn (Kelompok $k) => [
+            'name' => $k->name,
+            'kelas' => $k->kelas?->name,
+            'playing' => $playing->has($k->id),
+            'reset_url' => $playing->has($k->id)
+                ? route('admin.leaderboard.kelompok.destroy', $playing[$k->id])
+                : null,
+        ]);
+
+        return [$rows, $waiting, $waitingTotal];
+    }
+
+    /**
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection, 2: int}
+     */
+    private function individuBoard($quizId): array
+    {
+        $rows = IndividuAttempt::with(['quiz', 'siswa.kelas'])
+            ->withSum('answers', 'score')
+            ->whereNotNull('finished_at')
+            ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
+            ->get()
+            ->sort(fn (IndividuAttempt $a, IndividuAttempt $b) => $this->compare($a, $b))
+            ->values();
+
+        $playing = IndividuAttempt::whereNull('finished_at')
+            ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
+            ->pluck('id', 'siswa_id');
+
+        $waitingQuery = Siswa::with('kelas')
+            ->whereNotIn('id', $rows->pluck('siswa_id')->filter()->all())
+            ->orderBy('name');
+
+        $waitingTotal = (clone $waitingQuery)->count();
+        $waiting = $waitingQuery->limit(self::WAITING_LIMIT)->get()->map(fn (Siswa $s) => [
+            'name' => $s->name,
+            'kelas' => $s->kelas?->name,
+            'playing' => $playing->has($s->id),
+            'reset_url' => $playing->has($s->id)
+                ? route('admin.leaderboard.individu.destroy', $playing[$s->id])
+                : null,
+        ]);
+
+        return [$rows, $waiting, $waitingTotal];
+    }
+
+    /** Skor tertinggi dulu; kalau seri, waktu pengerjaan tersingkat menang. */
+    private function compare($a, $b): int
+    {
+        $scoreA = $a->scoreOn100();
+        $scoreB = $b->scoreOn100();
+
+        if ($scoreA !== $scoreB) {
+            return $scoreB <=> $scoreA;
+        }
+
+        return ($a->durationSeconds() ?? PHP_INT_MAX) <=> ($b->durationSeconds() ?? PHP_INT_MAX);
     }
 }
