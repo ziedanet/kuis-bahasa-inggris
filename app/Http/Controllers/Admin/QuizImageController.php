@@ -132,7 +132,7 @@ class QuizImageController extends Controller
 
         if ($resetAnswers) {
             // Jawaban lama tidak valid lagi karena kata/kunci berubah.
-            $image->answers()->delete();
+            $image->answers()->withTrashed()->forceDelete();
         }
     }
 }

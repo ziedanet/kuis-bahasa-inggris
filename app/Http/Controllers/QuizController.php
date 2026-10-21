@@ -211,14 +211,19 @@ class QuizController extends Controller
         $correctCount = $image->words->whereIn('id', $selectedIds)->where('is_correct', true)->count();
         $score = $correctCount * 2.5;
 
-        QuizGroupAnswer::updateOrCreate(
-            ['quiz_group_id' => $group->id, 'quiz_image_id' => $image->id],
-            [
-                'selected_word_ids' => $selectedIds,
-                'correct_count' => $correctCount,
-                'score' => $score,
-            ]
+        // withTrashed: jawaban lama yang ke-soft-delete (misal soal diedit admin) harus
+        // dipulihkan & ditimpa, bukan di-insert ulang — kalau tidak, kena unique
+        // (quiz_group_id, quiz_image_id) dan error 500.
+        $record = QuizGroupAnswer::withTrashed()->firstOrNew(
+            ['quiz_group_id' => $group->id, 'quiz_image_id' => $image->id]
         );
+        $record->fill([
+            'selected_word_ids' => $selectedIds,
+            'correct_count' => $correctCount,
+            'score' => $score,
+        ]);
+        $record->deleted_at = null;
+        $record->save();
 
         // Tampilkan benar/salah soal ini di halaman berikutnya (langkah "Check answers").
         session()->flash('review_image_id', $image->id);

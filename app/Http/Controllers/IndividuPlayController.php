@@ -109,14 +109,17 @@ class IndividuPlayController extends Controller
             return back()->withErrors(['opsi_id' => 'Pilihan jawaban tidak valid, coba lagi.']);
         }
 
-        IndividuAttemptAnswer::updateOrCreate(
-            ['attempt_id' => $attempt->id, 'soal_id' => $soal->id],
-            [
-                'opsi_id' => $opsi->id,
-                'is_correct' => $opsi->is_correct,
-                'score' => $opsi->is_correct ? 1 : 0,
-            ]
+        // withTrashed: pulihkan jawaban lama yang ke-soft-delete supaya tidak kena unique constraint.
+        $record = IndividuAttemptAnswer::withTrashed()->firstOrNew(
+            ['attempt_id' => $attempt->id, 'soal_id' => $soal->id]
         );
+        $record->fill([
+            'opsi_id' => $opsi->id,
+            'is_correct' => $opsi->is_correct,
+            'score' => $opsi->is_correct ? 1 : 0,
+        ]);
+        $record->deleted_at = null;
+        $record->save();
 
         return redirect()->route('quiz.individu.play', $quiz);
     }
