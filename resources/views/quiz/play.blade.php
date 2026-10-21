@@ -50,6 +50,34 @@
         <p class="instr">{{ $image->instruction }}</p>
         <p class="tip">Photo {{ $currentStep }} of {{ $totalImages }}. Look closely before you choose.</p>
 
+        <div class="tq-prog">
+            <div><b>{{ $progress['answered'] }}</b><small>Answered</small></div>
+            <div><b>{{ $progress['remaining'] }}</b><small>Unanswered</small></div>
+            <div class="g"><b>{{ $progress['correctWords'] }}</b><small>Correct words</small></div>
+            <div class="r"><b>{{ $progress['wrongWords'] }}</b><small>Wrong words</small></div>
+            <div><b>{{ rtrim(rtrim(number_format($progress['score'], 1), '0'), '.') }}</b><small>Score so far</small></div>
+        </div>
+        <div class="tq-nav" aria-label="Photo status">
+            @foreach ($progress['items'] as $item)
+                <span class="{{ $item['state'] }}" title="Photo {{ $item['n'] }}">{{ $item['n'] }}</span>
+            @endforeach
+        </div>
+        <p class="tq-legend">Green = all 5 correct &middot; Amber = partly correct &middot; Red = none &middot; Outlined = current &middot; Grey = unanswered</p>
+        <style>
+            .tq-prog { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0 8px; }
+            .tq-prog div { background: var(--surface-2, rgba(127,127,127,.12)); border-radius: 12px; padding: 6px 4px; text-align: center; }
+            .tq-prog b { display: block; font-size: 1.1rem; }
+            .tq-prog small { font-size: .65rem; opacity: .75; font-weight: 700; }
+            .tq-prog .g b { color: #16a34a; } .tq-prog .r b { color: #dc2626; }
+            .tq-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+            .tq-nav span { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: .75rem; font-weight: 800; border: 1.5px solid rgba(127,127,127,.4); opacity: .8; }
+            .tq-nav .ok { background: #16a34a; border-color: #16a34a; color: #fff; opacity: 1; }
+            .tq-nav .part { background: #f59e0b; border-color: #f59e0b; color: #fff; opacity: 1; }
+            .tq-nav .bad { background: #dc2626; border-color: #dc2626; color: #fff; opacity: 1; }
+            .tq-nav .now { border-color: currentColor; border-width: 2.5px; opacity: 1; }
+            .tq-legend { font-size: .68rem; opacity: .7; margin: 6px 0 0; }
+        </style>
+
         @if ($errors->any())
             <p class="err" style="margin-top: 12px;">{{ $errors->first() }}</p>
         @endif
