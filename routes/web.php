@@ -83,6 +83,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/soal-individu/{soal}', [SoalIndividuController::class, 'destroy'])->name('soal-individu.destroy');
 
         Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+        Route::delete('/leaderboard/kelompok/{group}', [LeaderboardController::class, 'destroyKelompok'])->name('leaderboard.kelompok.destroy');
+        Route::delete('/leaderboard/individu/{attempt}', [LeaderboardController::class, 'destroyIndividu'])->name('leaderboard.individu.destroy');
 
         // Master data kelas (dipakai sebagai pilihan dropdown, bukan input manual)
         Route::get('/kelas', [MasterKelasController::class, 'index'])->name('kelas.index');

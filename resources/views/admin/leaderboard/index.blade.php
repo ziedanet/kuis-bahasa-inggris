@@ -60,6 +60,7 @@
                     <th>Skor (0-100)</th>
                     <th>Predikat</th>
                     <th>Waktu</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,9 +92,16 @@
                             </span>
                         </td>
                         <td style="color: var(--text-muted);"><i class="fa-regular fa-clock"></i> {{ $group->durationLabel() }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.leaderboard.kelompok.destroy', $group) }}"
+                                  onsubmit="return confirm('Hapus riwayat kuis kelompok {{ e($group->name) }}? Skor & jawabannya hilang permanen, dan kelompok ini bisa mengisi kuis lagi dari awal.')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-pink btn-sm" title="Hapus riwayat"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:24px;">Belum ada kelompok yang menyelesaikan kuis ini.</td></tr>
+                    <tr><td colspan="8"style="text-align:center; color:var(--text-muted); padding:24px;">Belum ada kelompok yang menyelesaikan kuis ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -118,6 +126,7 @@
                     <th>Skor (0-100)</th>
                     <th>Predikat</th>
                     <th>Waktu</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -149,9 +158,16 @@
                             </span>
                         </td>
                         <td style="color: var(--text-muted);"><i class="fa-regular fa-clock"></i> {{ $attempt->durationLabel() }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.leaderboard.individu.destroy', $attempt) }}"
+                                  onsubmit="return confirm('Hapus riwayat kuis {{ e($attempt->siswa?->name ?? 'siswa ini') }}? Skor & jawabannya hilang permanen, dan siswa ini bisa mengisi kuis lagi dari awal.')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-pink btn-sm" title="Hapus riwayat"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:24px;">Belum ada siswa yang menyelesaikan kuis ini.</td></tr>
+                    <tr><td colspan="8"style="text-align:center; color:var(--text-muted); padding:24px;">Belum ada siswa yang menyelesaikan kuis ini.</td></tr>
                 @endforelse
             </tbody>
         </table>

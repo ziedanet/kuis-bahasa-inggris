@@ -7,6 +7,7 @@ use App\Models\IndividuAttempt;
 use App\Models\Quiz;
 use App\Models\QuizGroup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LeaderboardController extends Controller
 {
@@ -69,5 +70,38 @@ class LeaderboardController extends Controller
         }
 
         return view('admin.leaderboard.index', compact('rows', 'quizList', 'tipe', 'quizId'));
+    }
+
+    /**
+     * Hapus riwayat main satu kelompok (beserta semua jawabannya) supaya kelompok
+     * itu bisa mengisi kuis dari awal lagi. Hapus permanen (bukan soft delete)
+     * karena sesi main dicari lewat quiz_id + akun login.
+     */
+    public function destroyKelompok(QuizGroup $group)
+    {
+        $name = $group->name;
+
+        DB::transaction(function () use ($group) {
+            $group->answers()->withTrashed()->forceDelete();
+            $group->forceDelete();
+        });
+
+        return back()->with('status', "Riwayat kuis kelompok {$name} dihapus. Kelompok ini bisa mengisi kuis lagi.");
+    }
+
+    /**
+     * Sama seperti di atas, tapi untuk riwayat kuis individu satu siswa.
+     * Wajib hapus permanen karena tabel punya unique (quiz_id, siswa_id).
+     */
+    public function destroyIndividu(IndividuAttempt $attempt)
+    {
+        $name = $attempt->siswa?->name ?? 'siswa';
+
+        DB::transaction(function () use ($attempt) {
+            $attempt->answers()->withTrashed()->forceDelete();
+            $attempt->forceDelete();
+        });
+
+        return back()->with('status', "Riwayat kuis {$name} dihapus. Siswa ini bisa mengisi kuis lagi.");
     }
 }
