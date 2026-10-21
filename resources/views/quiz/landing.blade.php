@@ -1,42 +1,59 @@
-@extends('layouts.app')
+@extends('layouts.travel-quest')
 
 @section('title', $quiz->title . ' - Start Quiz')
 
+@section('route')
+    @include('travel-quest._route', ['step' => 0])
+@endsection
+
 @section('content')
-<div class="container">
-    <div class="quiz-box">
-        <span class="welcome-badge">🔎 Diagnostic Assessment</span>
-        <h2>{{ $quiz->title }}</h2>
+@php
+    $titleWords = preg_split('/\s+/', trim($quiz->title));
+    $lastWord = array_pop($titleWords);
+    $firstWords = implode(' ', $titleWords);
+@endphp
+<section class="screen in welcome">
+    <div class="welcome-copy">
+        <p class="eyebrow">English class · Team game</p>
+        <h1>{{ $firstWords }} <span>{{ $lastWord }}</span></h1>
+        <p class="lead">{{ $quiz->narration ?? $quiz->description }}</p>
 
-        <div class="narration-box">
-            {{ $quiz->narration ?? $quiz->description }}
-        </div>
-
-        @if ($errors->any())
-            <div class="alert-error">{{ $errors->first() }}</div>
-        @endif
-
-        <div class="form-group">
-            <label><i class="fa-solid fa-users"></i> Group</label>
-            <div class="input-cream" style="cursor: default;">{{ $kelompokAccount->name }}</div>
-        </div>
-        @if ($kelompokAccount->kelas)
-            <div class="form-group">
-                <label><i class="fa-solid fa-chalkboard"></i> Class</label>
-                <div class="input-cream" style="cursor: default;">{{ $kelompokAccount->kelas->name }}</div>
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('quiz.start', $quiz) }}">
+        <form class="checkin" method="POST" action="{{ route('quiz.start', $quiz) }}">
             @csrf
-            <button type="submit" class="btn btn-start" style="width: 100%; justify-content: center; font-size: 1.1rem;">
-                Start the Adventure <i class="fa-solid fa-arrow-right"></i>
+            <label for="team-name">Team name</label>
+            <input type="text" id="team-name" value="{{ $kelompokAccount->name }}" readonly>
+            @if ($kelompokAccount->kelas)
+                <p class="sync">Class: {{ $kelompokAccount->kelas->name }}</p>
+            @endif
+            @if ($errors->any())
+                <p class="err">{{ $errors->first() }}</p>
+            @endif
+            <button type="submit" class="btn btn-sun">
+                Start the journey <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg>
             </button>
         </form>
 
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 18px; text-align: center;">
-            The score is for mapping initial understanding and does not count toward your report card.
-        </p>
+        <div class="gates">
+            <h2 class="gates-title">Your flight plan</h2>
+            <ul>
+                <li>
+                    <span class="gate-id">Session 1</span>
+                    <strong>Adjectives</strong>
+                    <span class="gate-note">{{ $adjCount }} {{ \Illuminate\Support\Str::plural('photo', $adjCount) }}</span>
+                </li>
+                <li>
+                    <span class="gate-id">Session 2</span>
+                    <strong>Verbs</strong>
+                    <span class="gate-note">{{ $verbCount }} {{ \Illuminate\Support\Str::plural('photo', $verbCount) }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <p class="rules">For each photo, pick exactly 5 of the 10 words. Your final score is out of 100, and it does not count toward your report card.</p>
     </div>
-</div>
+
+    <div class="welcome-art">
+        @include('travel-quest._art', ['artId' => 'heroArt'])
+    </div>
+</section>
 @endsection

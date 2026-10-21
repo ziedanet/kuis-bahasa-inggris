@@ -47,7 +47,11 @@ class QuizController extends Controller
 
         $kelompokAccount = Auth::guard('kelompok')->user();
 
-        return view('quiz.landing', compact('quiz', 'kelompokAccount'));
+        $activeImages = QuizImage::where('quiz_id', $quiz->id)->where('is_active', true);
+        $adjCount = (clone $activeImages)->where('session_type', 'adjectives')->count();
+        $verbCount = (clone $activeImages)->where('session_type', 'verbs')->count();
+
+        return view('quiz.landing', compact('quiz', 'kelompokAccount', 'adjCount', 'verbCount'));
     }
 
     /**
@@ -85,14 +89,38 @@ class QuizController extends Controller
         }
 
         $answeredImageIds = $group->answers()->pluck('quiz_image_id');
+        $totalImages = QuizImage::where('quiz_id', $quiz->id)->where('is_active', true)->count();
 
-        $nextImage = QuizImage::where('quiz_id', $quiz->id)
-            ->where('is_active', true)
-            ->whereNotIn('id', $answeredImageIds)
-            ->orderByRaw("CASE WHEN session_type = 'adjectives' THEN 0 ELSE 1 END")
-            ->orderBy('order_number')
-            ->with('words')
-            ->first();
+        // Langkah "Check answers": habis jawaban disimpan, tampilkan benar/salah
+        // soal yang barusan dijawab dulu (sekali saja, lewat flash session).
+        $reviewImageId = session('review_image_id');
+        if ($reviewImageId) {
+            $reviewImage = QuizImage::where('quiz_id', $quiz->id)->with('words')->find($reviewImageId);
+            $reviewAnswer = $reviewImage
+                ? $group->answers()->where('quiz_image_id', $reviewImage->id)->first()
+                : null;
+
+            if ($reviewImage && $reviewAnswer) {
+                $upcoming = $this->nextImage($quiz, $answeredImageIds);
+
+                return view('quiz.play', [
+                    'quiz' => $quiz,
+                    'group' => $group,
+                    'image' => $reviewImage,
+                    'words' => $reviewImage->words->shuffle($reviewImage->id + $group->id)->values(),
+                    'currentStep' => $answeredImageIds->count(),
+                    'totalImages' => $totalImages,
+                    'mode' => 'review',
+                    'sessionNo' => $reviewImage->session_type === 'adjectives' ? 1 : 2,
+                    'selectedIds' => array_map('intval', $reviewAnswer->selected_word_ids ?? []),
+                    'answer' => $reviewAnswer,
+                    'hasNext' => (bool) $upcoming,
+                    'nextNewSession' => $upcoming && $upcoming->session_type !== $reviewImage->session_type,
+                ]);
+            }
+        }
+
+        $nextImage = $this->nextImage($quiz, $answeredImageIds);
 
         if (! $nextImage) {
             // Soal terakhir baru saja dijawab (atau kuis ini memang tidak punya soal) —
@@ -104,11 +132,11 @@ class QuizController extends Controller
             return redirect()->route('quiz.result', $quiz);
         }
 
-        $totalImages = QuizImage::where('quiz_id', $quiz->id)->where('is_active', true)->count();
         $currentStep = $answeredImageIds->count() + 1;
 
-        // Acak urutan kata supaya posisi jawaban benar tidak selalu sama.
-        $words = $nextImage->words->shuffle()->values();
+        // Acak urutan kata supaya posisi jawaban benar tidak selalu sama
+        // (seed tetap per gambar+kelompok, jadi urutannya sama persis pas halaman dicek).
+        $words = $nextImage->words->shuffle($nextImage->id + $group->id)->values();
 
         return view('quiz.play', [
             'quiz' => $quiz,
@@ -117,7 +145,27 @@ class QuizController extends Controller
             'words' => $words,
             'currentStep' => $currentStep,
             'totalImages' => $totalImages,
+            'mode' => 'play',
+            'sessionNo' => $nextImage->session_type === 'adjectives' ? 1 : 2,
+            'selectedIds' => [],
+            'answer' => null,
+            'hasNext' => true,
+            'nextNewSession' => false,
         ]);
+    }
+
+    /**
+     * Soal aktif berikutnya yang belum dijawab (sesi adjectives dulu, lalu verbs).
+     */
+    private function nextImage(Quiz $quiz, $answeredImageIds): ?QuizImage
+    {
+        return QuizImage::where('quiz_id', $quiz->id)
+            ->where('is_active', true)
+            ->whereNotIn('id', $answeredImageIds)
+            ->orderByRaw("CASE WHEN session_type = 'adjectives' THEN 0 ELSE 1 END")
+            ->orderBy('order_number')
+            ->with('words')
+            ->first();
     }
 
     /**
@@ -164,6 +212,9 @@ class QuizController extends Controller
             ]
         );
 
+        // Tampilkan benar/salah soal ini di halaman berikutnya (langkah "Check answers").
+        session()->flash('review_image_id', $image->id);
+
         return redirect()->route('quiz.play', $quiz);
     }
 
@@ -180,10 +231,25 @@ class QuizController extends Controller
 
         $answers = $group->answers()->with(['image.words'])->get();
 
+        // Ringkasan benar/total kata per sesi buat boarding pass.
+        $sessionStats = [
+            'adjectives' => ['correct' => 0, 'max' => 0],
+            'verbs' => ['correct' => 0, 'max' => 0],
+        ];
+        foreach ($answers as $item) {
+            $type = $item->image->session_type;
+            if (isset($sessionStats[$type])) {
+                $sessionStats[$type]['correct'] += $item->correct_count;
+                $sessionStats[$type]['max'] += 5;
+            }
+        }
+
         return view('quiz.result', [
             'quiz' => $quiz,
             'group' => $group,
             'answers' => $answers,
+            'sessionStats' => $sessionStats,
+            'durationSeconds' => $group->durationSeconds(),
             'scoreOn100' => $group->scoreOn100(),
             'predikat' => $group->predikat(),
         ]);
