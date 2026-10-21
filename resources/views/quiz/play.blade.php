@@ -23,6 +23,9 @@
         </div>
         <div class="q-info">
             <h3>{{ $image->title }}</h3>
+            @if ($image->lokasi)
+                <p style="font-size: 0.85rem; font-weight: 700; color: var(--ink-cyan); margin-bottom: 6px;"><i class="fa-solid fa-location-dot"></i> {{ $image->lokasi }}</p>
+            @endif
             <p>{{ $image->instruction }}</p>
         </div>
     </div>

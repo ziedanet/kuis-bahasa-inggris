@@ -60,6 +60,9 @@
                             <span class="badge badge-pink">NONAKTIF</span>
                         @endunless
                     </h4>
+                    @if ($item->lokasi)
+                        <p style="font-size: 0.82rem; margin-bottom: 4px;"><i class="fa-solid fa-location-dot"></i> {{ $item->lokasi }}</p>
+                    @endif
                     <p style="color: var(--text-muted); font-size: 0.85rem;">{{ $item->instruction }}</p>
                     <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 4px;">{{ $item->words_count }} kata pilihan</p>
                 </div>

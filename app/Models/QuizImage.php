@@ -19,6 +19,7 @@ class QuizImage extends Model
         'quiz_id',
         'session_type',
         'title',
+        'lokasi',
         'instruction',
         'image_path',
         'order_number',

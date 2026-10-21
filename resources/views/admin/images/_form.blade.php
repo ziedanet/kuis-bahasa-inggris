@@ -44,6 +44,11 @@
     </div>
 
     <div class="form-group">
+        <label>Lokasi <span style="font-weight:400; color: var(--text-muted);">(opsional)</span></label>
+        <input type="text" name="lokasi" maxlength="150" placeholder="Contoh: Pulau Rupat, Bengkalis" value="{{ old('lokasi', $isEdit ? $image->lokasi : '') }}">
+    </div>
+
+    <div class="form-group">
         <label>Instruksi</label>
         <textarea name="instruction" rows="2" placeholder="Pilihlah 5 dari 10 kata sifat berikut yang paling tepat menggambarkan...">{{ old('instruction', $isEdit ? $image->instruction : '') }}</textarea>
     </div>
