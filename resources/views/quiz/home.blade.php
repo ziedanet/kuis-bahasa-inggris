@@ -17,6 +17,9 @@
         <a href="#kuis" class="btn btn-primary">
             <i class="fa-solid fa-gamepad"></i> Play the Quiz Now
         </a>
+        <a href="{{ route('refleksi.create') }}" class="btn btn-dark">
+            <i class="fa-solid fa-star"></i> Reflection
+        </a>
     </div>
 </section>
 

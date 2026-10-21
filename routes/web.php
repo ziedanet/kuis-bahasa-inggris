@@ -8,12 +8,14 @@ use App\Http\Controllers\Admin\MasterKelasController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Admin\QuizImageController;
+use App\Http\Controllers\Admin\RefleksiController as AdminRefleksiController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\SoalController;
 use App\Http\Controllers\Admin\SoalIndividuController;
 use App\Http\Controllers\IndividuPlayController;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\RefleksiController;
 use App\Http\Controllers\UserAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +35,10 @@ Route::post('/kuis-individu/{quiz}/jawab', [IndividuPlayController::class, 'answ
 Route::get('/kuis-individu/{quiz}/hasil', [IndividuPlayController::class, 'result'])->name('quiz.individu.result');
 Route::post('/kuis-individu/{quiz}/ulang', [IndividuPlayController::class, 'retry'])->name('quiz.individu.retry');
 Route::post('/kuis-individu/{quiz}/selesai', [IndividuPlayController::class, 'finish'])->name('quiz.individu.finish');
+
+// ================= Publik: refleksi peserta didik (tanpa login: nama + kelas) =================
+Route::get('/refleksi', [RefleksiController::class, 'create'])->name('refleksi.create');
+Route::post('/refleksi', [RefleksiController::class, 'store'])->middleware('throttle:20,1')->name('refleksi.store');
 
 // Login publik (siswa & kelompok) — dipakai form login di halaman utama, beda dari login admin.
 Route::post('/login-siswa', [UserAuthController::class, 'loginSiswa'])->name('user.login.siswa');
@@ -92,6 +98,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/leaderboard/individu/{attempt}', [LeaderboardController::class, 'showIndividu'])->name('leaderboard.individu.show');
         Route::delete('/leaderboard/kelompok/{group}', [LeaderboardController::class, 'destroyKelompok'])->name('leaderboard.kelompok.destroy');
         Route::delete('/leaderboard/individu/{attempt}', [LeaderboardController::class, 'destroyIndividu'])->name('leaderboard.individu.destroy');
+
+        // Rekap refleksi peserta didik
+        Route::get('/refleksi', [AdminRefleksiController::class, 'index'])->name('refleksi.index');
+        Route::delete('/refleksi/{refleksi}', [AdminRefleksiController::class, 'destroy'])->name('refleksi.destroy');
 
         // Master data kelas (dipakai sebagai pilihan dropdown, bukan input manual)
         Route::get('/kelas', [MasterKelasController::class, 'index'])->name('kelas.index');

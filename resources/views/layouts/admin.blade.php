@@ -237,6 +237,9 @@
                 <a href="{{ route('admin.leaderboard') }}" class="nav-item {{ request()->routeIs('admin.leaderboard') ? 'active' : '' }}">
                     <i class="fa-solid fa-trophy"></i> Leaderboard
                 </a>
+                <a href="{{ route('admin.refleksi.index') }}" class="nav-item {{ request()->routeIs('admin.refleksi.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-star"></i> Refleksi
+                </a>
                 <a href="{{ route('admin.kelas.index') }}" class="nav-item {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-chalkboard-user"></i> Master Kelas
                 </a>

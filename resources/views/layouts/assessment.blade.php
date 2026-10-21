@@ -77,7 +77,7 @@
 
         <header>
             <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-            <h1>Individual Assessment</h1>
+            <h1>@yield('heading', 'Individual Assessment')</h1>
             <p class="sub">@yield('subtitle')</p>
         </header>
 

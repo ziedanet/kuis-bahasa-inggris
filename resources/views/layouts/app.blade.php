@@ -322,6 +322,7 @@
         <ul class="nav-links" id="nav-links">
             <li><a href="{{ route('quiz.home') }}">Home</a></li>
             <li><a href="{{ route('quiz.home') }}#kuis">Quiz List</a></li>
+            <li><a href="{{ route('refleksi.create') }}">Reflection</a></li>
             @isset($group)
                 <li><div class="group-badge"><i class="fa-solid fa-users"></i> {{ $group->name }}</div></li>
             @endisset
