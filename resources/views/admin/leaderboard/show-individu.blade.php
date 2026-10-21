@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Jawaban - ' . ($attempt->siswa?->name ?? 'Siswa'))
+@section('title', 'Detail Jawaban - ' . $attempt->displayName())
 
 @section('page-title')
     <i class="fa-solid fa-list-check" style="color: var(--ocean);"></i> Detail Jawaban Individu
@@ -23,8 +23,8 @@
 
 <div class="panel-card">
     <div class="dt-summary">
-        <div><div class="dt-label">Siswa</div><div class="dt-value">{{ $attempt->siswa?->name ?? '-' }}</div></div>
-        <div><div class="dt-label">Kelas</div><div class="dt-value">{{ $attempt->siswa?->kelas?->name ?? '-' }}</div></div>
+        <div><div class="dt-label">Peserta</div><div class="dt-value">{{ $attempt->displayName() }}</div></div>
+        <div><div class="dt-label">Kelas</div><div class="dt-value">{{ $attempt->displayKelas() }}</div></div>
         <div><div class="dt-label">Kuis</div><div class="dt-value">{{ $attempt->quiz?->title }}</div></div>
         <div><div class="dt-label">Skor (0-100)</div><div class="dt-value">{{ number_format($attempt->scoreOn100(), 1) }}</div></div>
         <div>

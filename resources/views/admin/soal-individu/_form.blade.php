@@ -3,7 +3,7 @@
 
 @php
     $isEdit = isset($soal);
-    $opsiOld = old('opsi', $isEdit ? $soal->opsi->pluck('opsi_text')->all() : array_fill(0, 5, ''));
+    $opsiOld = old('opsi', $isEdit ? $soal->opsi->pluck('opsi_text')->all() : array_fill(0, 4, ''));
     $correctOld = old('correct_index', $isEdit ? $soal->opsi->values()->search(fn ($o) => $o->is_correct) : null);
     $currentQuizId = old('quiz_id', $isEdit ? $soal->quiz_id : ($selectedQuizId ?? null));
 @endphp
@@ -46,10 +46,10 @@
 </div>
 
 <div class="form-group">
-    <label style="color: var(--primary-yellow);"><i class="fa-solid fa-key"></i> 5 Pilihan Jawaban &mdash; pilih 1 sebagai kunci jawaban benar</label>
+    <label style="color: var(--primary-yellow);"><i class="fa-solid fa-key"></i> 4 Pilihan Jawaban (A-D) &mdash; pilih 1 sebagai kunci jawaban benar</label>
 
     <div class="word-bank-grid" style="grid-template-columns: 1fr;">
-        @for ($i = 0; $i < 5; $i++)
+        @for ($i = 0; $i < 4; $i++)
             <div class="word-item-row">
                 <input type="radio" name="correct_index" value="{{ $i }}" @checked((string) $correctOld === (string) $i) required
                        style="width:18px; height:18px; accent-color: var(--primary-lime); flex-shrink: 0;">

@@ -7,8 +7,8 @@
     @forelse ($rows as $index => $item)
         @php
             $rank = $index + 1;
-            $name = $isKelompok ? $item->name : ($item->siswa?->name ?? '-');
-            $kelas = $isKelompok ? $item->kelas?->name : $item->siswa?->kelas?->name;
+            $name = $isKelompok ? $item->name : $item->displayName();
+            $kelas = $isKelompok ? $item->kelas?->name : $item->displayKelas();
             $score = $item->scoreOn100();
             $showUrl = $isKelompok
                 ? route('admin.leaderboard.kelompok.show', $item)
@@ -68,6 +68,6 @@
     @endforeach
 
     @if ($waitingTotal > $waiting->count())
-        <p class="lb-more">+ {{ $waitingTotal - $waiting->count() }} lainnya belum menyelesaikan kuis.</p>
+        <p class="lb-more">+ {{ $waitingTotal - $waiting->count() }} lainnya.</p>
     @endif
 </div>

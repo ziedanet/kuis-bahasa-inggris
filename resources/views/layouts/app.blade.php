@@ -225,7 +225,9 @@
         .step-card p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0; }
 
         /* Kuis showcase grid di homepage */
-        .quiz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        /* Flex + justify center: 1, 2, atau banyak kartu tetap rapi & berada di tengah. */
+        .quiz-grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 24px; }
+        .quiz-grid > .quiz-card { flex: 1 1 280px; max-width: 360px; min-width: 0; }
 
         .quiz-card {
             background: var(--card-bg); border: 3px solid #000; border-radius: 20px; box-shadow: var(--shadow-brutal);

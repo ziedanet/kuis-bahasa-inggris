@@ -60,8 +60,8 @@
     <tbody>
         @forelse ($rows as $i => $item)
             @php
-                $name = $isKelompok ? $item->name : ($item->siswa?->name ?? '-');
-                $kelas = $isKelompok ? $item->kelas?->name : $item->siswa?->kelas?->name;
+                $name = $isKelompok ? $item->name : $item->displayName();
+                $kelas = $isKelompok ? $item->kelas?->name : $item->displayKelas();
             @endphp
             <tr class="{{ $i === 0 ? 'top' : '' }}">
                 <td class="rank">{{ $i + 1 }}</td>

@@ -18,6 +18,8 @@ class Quiz extends Model
         'title',
         'description',
         'narration',
+        'bacaan_judul',
+        'bacaan_teks',
         'duration_minutes',
         'icon',
         'icon_color',
@@ -85,6 +87,6 @@ class Quiz extends Model
 
         $soalCount = $this->soalIndividuCount();
 
-        return $soalCount >= 1 ? route('quiz.individu.play', $this) : null;
+        return $soalCount >= 1 ? route('quiz.individu.landing', $this) : null;
     }
 }

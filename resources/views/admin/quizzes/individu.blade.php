@@ -108,6 +108,15 @@
                 <textarea name="narration" rows="3" placeholder="Narasi instruksi singkat untuk peserta sebelum mulai...">{{ old('narration') }}</textarea>
             </div>
 
+            <div class="form-group">
+                <label>Judul Teks Bacaan <span style="font-weight:400; color: var(--text-muted);">(opsional)</span></label>
+                <input type="text" name="bacaan_judul" maxlength="150" placeholder="Contoh: Pekanbaru Zoo" value="{{ old('bacaan_judul') }}">
+            </div>
+            <div class="form-group">
+                <label>Teks Bacaan <span style="font-weight:400; color: var(--text-muted);">(opsional, tampil di atas setiap soal)</span></label>
+                <textarea name="bacaan_teks" rows="5" placeholder="Tempel teks bacaan yang dipakai semua soal kuis ini...">{{ old('bacaan_teks') }}</textarea>
+            </div>
+
             <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn btn-dark" x-on:click="show = false">Batal</button>
                 <button type="submit" class="btn btn-primary">

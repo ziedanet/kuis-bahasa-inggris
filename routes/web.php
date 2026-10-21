@@ -25,10 +25,14 @@ Route::get('/kuis/{quiz}/main', [QuizController::class, 'play'])->name('quiz.pla
 Route::post('/kuis/{quiz}/jawab', [QuizController::class, 'answer'])->name('quiz.answer');
 Route::get('/kuis/{quiz}/hasil', [QuizController::class, 'result'])->name('quiz.result');
 
-// ================= Publik: main kuis individu (wajib login siswa) =================
+// ================= Publik: main kuis individu (tanpa login: isi nama + kelas) =================
+Route::get('/kuis-individu/{quiz}/mulai', [IndividuPlayController::class, 'landing'])->name('quiz.individu.landing');
+Route::post('/kuis-individu/{quiz}/mulai', [IndividuPlayController::class, 'start'])->name('quiz.individu.start');
 Route::get('/kuis-individu/{quiz}/main', [IndividuPlayController::class, 'play'])->name('quiz.individu.play');
 Route::post('/kuis-individu/{quiz}/jawab', [IndividuPlayController::class, 'answer'])->name('quiz.individu.answer');
 Route::get('/kuis-individu/{quiz}/hasil', [IndividuPlayController::class, 'result'])->name('quiz.individu.result');
+Route::post('/kuis-individu/{quiz}/ulang', [IndividuPlayController::class, 'retry'])->name('quiz.individu.retry');
+Route::post('/kuis-individu/{quiz}/selesai', [IndividuPlayController::class, 'finish'])->name('quiz.individu.finish');
 
 // Login publik (siswa & kelompok) — dipakai form login di halaman utama, beda dari login admin.
 Route::post('/login-siswa', [UserAuthController::class, 'loginSiswa'])->name('user.login.siswa');

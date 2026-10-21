@@ -102,6 +102,8 @@ class QuizController extends Controller
             'duration_minutes' => ['required', 'integer', 'min:1'],
             'status' => ['required', 'in:aktif,draft'],
             'narration' => ['required', 'string'],
+            'bacaan_judul' => ['nullable', 'string', 'max:150'],
+            'bacaan_teks' => ['nullable', 'string'],
         ];
 
         if ($isCreate) {
@@ -114,6 +116,8 @@ class QuizController extends Controller
             'title' => $data['title'],
             'description' => $data['narration'],
             'narration' => $data['narration'],
+            'bacaan_judul' => $data['bacaan_judul'] ?? null,
+            'bacaan_teks' => $data['bacaan_teks'] ?? null,
             'category_label' => $data['category_label'],
             'duration_minutes' => $data['duration_minutes'],
             'is_active' => $data['status'] === 'aktif',

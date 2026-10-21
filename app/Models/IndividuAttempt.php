@@ -15,7 +15,7 @@ class IndividuAttempt extends Model
 
     protected $table = 'zd_individu_attempts';
 
-    protected $fillable = ['quiz_id', 'siswa_id', 'finished_at'];
+    protected $fillable = ['quiz_id', 'siswa_id', 'participant_name', 'kelas_id', 'finished_at'];
 
     protected $casts = [
         'finished_at' => 'datetime',
@@ -29,6 +29,22 @@ class IndividuAttempt extends Model
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class);
+    }
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(MasterKelas::class, 'kelas_id');
+    }
+
+    /** Nama peserta: isian manual (tanpa login) atau nama siswa untuk data lama. */
+    public function displayName(): string
+    {
+        return $this->participant_name ?: ($this->siswa?->name ?? '-');
+    }
+
+    public function displayKelas(): string
+    {
+        return $this->kelas?->name ?? ($this->siswa?->kelas?->name ?? '-');
     }
 
     public function answers(): HasMany

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\IndividuAttemptAnswer;
 use App\Models\Quiz;
 use App\Models\SoalIndividu;
 use Illuminate\Http\Request;
@@ -84,6 +85,9 @@ class SoalIndividuController extends Controller
             $soal->update(['gambar' => $request->file('gambar')->store('soal-individu', 'public')]);
         }
 
+        // Pilihan diganti, jadi jawaban lama peserta untuk soal ini tidak valid lagi.
+        IndividuAttemptAnswer::where('soal_id', $soal->id)->withTrashed()->forceDelete();
+
         $this->syncOpsi($soal, $data['opsi'], (int) $data['correct_index']);
 
         return redirect()->route('admin.soal-individu.index', ['quiz' => $data['quiz_id']])
@@ -112,18 +116,18 @@ class SoalIndividuController extends Controller
             'gambar' => ['nullable', 'image', 'max:4096'],
             'order_number' => ['required', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
-            'opsi' => ['required', 'array', 'size:5'],
+            'opsi' => ['required', 'array', 'size:4'],
             'opsi.*' => ['required', 'string', 'max:150'],
-            'correct_index' => ['required', 'integer', 'min:0', 'max:4'],
+            'correct_index' => ['required', 'integer', 'min:0', 'max:3'],
         ], [
             'quiz_id.required' => 'Pilih kuis induk buat soal ini.',
-            'opsi.size' => 'Harus diisi tepat 5 pilihan jawaban.',
+            'opsi.size' => 'Harus diisi tepat 4 pilihan jawaban (A-D).',
             'correct_index.required' => 'Pilih 1 jawaban yang benar.',
         ]);
     }
 
     /**
-     * @param  array<int, string>  $opsiTexts  index 0-4
+     * @param  array<int, string>  $opsiTexts  index 0-3
      */
     private function syncOpsi(SoalIndividu $soal, array $opsiTexts, int $correctIndex): void
     {

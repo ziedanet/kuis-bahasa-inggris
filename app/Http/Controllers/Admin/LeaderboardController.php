@@ -7,7 +7,6 @@ use App\Models\IndividuAttempt;
 use App\Models\Kelompok;
 use App\Models\Quiz;
 use App\Models\QuizGroup;
-use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -87,7 +86,7 @@ class LeaderboardController extends Controller
      */
     public function showIndividu(IndividuAttempt $attempt)
     {
-        $attempt->load(['quiz', 'siswa.kelas'])->loadSum('answers', 'score');
+        $attempt->load(['quiz', 'siswa.kelas', 'kelas'])->loadSum('answers', 'score');
 
         $answers = $attempt->answers()
             ->with(['soal.opsi', 'opsi'])
@@ -178,7 +177,7 @@ class LeaderboardController extends Controller
      */
     private function individuBoard($quizId): array
     {
-        $rows = IndividuAttempt::with(['quiz', 'siswa.kelas'])
+        $rows = IndividuAttempt::with(['quiz', 'siswa.kelas', 'kelas'])
             ->withSum('answers', 'score')
             ->whereNotNull('finished_at')
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
@@ -186,22 +185,19 @@ class LeaderboardController extends Controller
             ->sort(fn (IndividuAttempt $a, IndividuAttempt $b) => $this->compare($a, $b))
             ->values();
 
-        $playing = IndividuAttempt::whereNull('finished_at')
+        // Peserta individu tidak punya daftar akun (tanpa login), jadi baris redup
+        // hanya berisi yang sedang mengerjakan ("Playing"), bisa direset kalau macet.
+        $playingQuery = IndividuAttempt::with(['siswa.kelas', 'kelas'])
+            ->whereNull('finished_at')
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
-            ->pluck('id', 'siswa_id');
+            ->orderBy('created_at');
 
-        $waitingQuery = Siswa::with('kelas')
-            ->whereNotIn('id', $rows->pluck('siswa_id')->filter()->all())
-            ->orderBy('name');
-
-        $waitingTotal = (clone $waitingQuery)->count();
-        $waiting = $waitingQuery->limit(self::WAITING_LIMIT)->get()->map(fn (Siswa $s) => [
-            'name' => $s->name,
-            'kelas' => $s->kelas?->name,
-            'playing' => $playing->has($s->id),
-            'reset_url' => $playing->has($s->id)
-                ? route('admin.leaderboard.individu.destroy', $playing[$s->id])
-                : null,
+        $waitingTotal = (clone $playingQuery)->count();
+        $waiting = $playingQuery->limit(self::WAITING_LIMIT)->get()->map(fn (IndividuAttempt $a) => [
+            'name' => $a->displayName(),
+            'kelas' => $a->displayKelas(),
+            'playing' => true,
+            'reset_url' => route('admin.leaderboard.individu.destroy', $a),
         ]);
 
         return [$rows, $waiting, $waitingTotal];

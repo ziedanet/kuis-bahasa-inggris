@@ -75,7 +75,7 @@
                 </div>
             </div>
         @empty
-            <p style="text-align:center; color: var(--text-muted); grid-column: 1 / -1;">No quizzes for this filter yet.</p>
+            <p style="text-align:center; color: var(--text-muted); width: 100%;">No quizzes for this filter yet.</p>
         @endforelse
     </div>
 </section>

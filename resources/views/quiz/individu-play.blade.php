@@ -1,54 +1,80 @@
-@extends('layouts.app')
+@extends('layouts.assessment')
 
-@section('title', $quiz->title . ' - Find the Word')
+@section('title', $quiz->title . ' - Question ' . $currentStep)
+@section('subtitle', $quiz->title)
+
+@section('styles')
+        .who { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .who div { background: var(--soft); border-radius: 14px; padding: 8px 14px; }
+        .who small { display: block; color: var(--muted); font-size: .72rem; }
+        .who b { font-size: .92rem; }
+        .progress { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 4px 0 16px; }
+        .progress i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--violet), var(--rose)); }
+        .step { display: flex; justify-content: space-between; font-size: .82rem; font-weight: 700; color: var(--muted); }
+        .passage { background: #f1e9fd; border: 1px solid #e0d2fa; border-radius: 22px; padding: 20px 22px; margin-bottom: 18px; }
+        .passage .tag { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--violet); }
+        .passage h2 { font-size: 1.15rem; color: var(--violet); margin: 4px 0 8px; }
+        .passage p { font-size: .9rem; line-height: 1.7; white-space: pre-line; }
+        .q-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+        .q-num { flex: none; min-width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--violet), var(--rose)); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .85rem; }
+        .q-text { font-weight: 800; line-height: 1.45; }
+        .q-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--line); }
+        .opt { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: border-color .12s, background .12s; }
+        .opt:hover { border-color: var(--violet); }
+        .opt input { position: absolute; opacity: 0; pointer-events: none; }
+        .opt .letter { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid #c8b8f0; color: var(--violet); display: grid; place-items: center; font-size: .78rem; font-weight: 800; }
+        .opt:has(input:checked) { border-color: var(--violet); background: #f6f0ff; box-shadow: 0 0 0 2px rgba(124, 58, 237, .25); }
+        .opt:has(input:checked) .letter { background: var(--violet); color: #fff; border-color: var(--violet); }
+        .opt:has(input:focus-visible) { outline: 3px solid var(--violet); outline-offset: 2px; }
+        .opt .txt { font-size: .95rem; }
+@endsection
 
 @section('content')
-<div class="container">
-    <div class="quiz-box">
+<div class="who">
+    <div><small>Name</small><b>{{ $attempt->displayName() }}</b></div>
+    <div><small>Class</small><b>{{ $attempt->displayKelas() }}</b></div>
+</div>
 
-    <div class="q-header">
-        <span class="q-tag" style="background: var(--primary-lime);">INDIVIDUAL QUESTION 📝</span>
-        <span class="q-counter">Question {{ $currentStep }} of {{ $totalSoal }}</span>
-    </div>
+<div class="step"><span>Question {{ $currentStep }} of {{ $totalSoal }}</span><span>{{ round(($currentStep - 1) / max(1, $totalSoal) * 100) }}%</span></div>
+<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ $totalSoal }}" aria-valuenow="{{ $currentStep - 1 }}">
+    <i style="width: {{ ($currentStep - 1) / max(1, $totalSoal) * 100 }}%;"></i>
+</div>
 
-    <div class="q-content" style="{{ $soal->gambarUrl() ? '' : 'grid-template-columns: 1fr;' }}">
-        @if ($soal->gambarUrl())
-            <div class="img-wrapper">
-                <img src="{{ $soal->gambarUrl() }}" alt="Question image">
-            </div>
-        @endif
-        <div class="q-info" style="justify-content: center;">
-            <h3>{{ $soal->narasi }}</h3>
-        </div>
+@if ($quiz->bacaan_teks)
+    <div class="passage">
+        <div class="tag">&#128214; Reading passage</div>
+        @if ($quiz->bacaan_judul)<h2>{{ $quiz->bacaan_judul }}</h2>@endif
+        <p>{{ $quiz->bacaan_teks }}</p>
     </div>
+@endif
+
+<form method="POST" action="{{ route('quiz.individu.answer', $quiz) }}" class="card">
+    @csrf
+    <input type="hidden" name="soal_id" value="{{ $soal->id }}">
 
     @if ($errors->any())
-        <div class="alert-error">{{ $errors->first() }}</div>
+        <div class="err">{{ $errors->first() }}</div>
     @endif
 
-    <form method="POST" action="{{ route('quiz.individu.answer', $quiz) }}">
-        @csrf
-        <input type="hidden" name="soal_id" value="{{ $soal->id }}">
-
-        <div class="instruction-badge">
-            <span><i class="fa-solid fa-circle-check"></i> Choose the <strong style="color: var(--ink-yellow);">1 ANSWER</strong> that fits best:</span>
-        </div>
-
-        <div class="word-grid" style="grid-template-columns: 1fr;">
-            @foreach ($opsiList as $opsi)
-                <label class="word-chip" style="text-align: left; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                    <input type="radio" name="opsi_id" value="{{ $opsi->id }}" required style="width: 18px; height: 18px; accent-color: var(--primary-lime); flex-shrink: 0;">
-                    {{ $opsi->opsi_text }}
-                </label>
-            @endforeach
-        </div>
-
-        <div class="nav-controls">
-            <button type="submit" class="btn btn-next">
-                Next <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-    </form>
+    <div class="q-head">
+        <span class="q-num">{{ $currentStep }}</span>
+        <span class="q-text">{{ $soal->narasi }}</span>
     </div>
-</div>
+
+    @if ($soal->gambarUrl())
+        <img src="{{ $soal->gambarUrl() }}" alt="Question image" class="q-img">
+    @endif
+
+    @foreach ($opsiList as $i => $opsi)
+        <label class="opt">
+            <input type="radio" name="opsi_id" value="{{ $opsi->id }}" required>
+            <span class="letter">{{ chr(65 + $i) }}</span>
+            <span class="txt">{{ $opsi->opsi_text }}</span>
+        </label>
+    @endforeach
+
+    <button type="submit" class="btn btn-grad" style="margin-top: 8px;">
+        {{ $isLast ? '✅ Submit Answers' : 'Next question →' }}
+    </button>
+</form>
 @endsection
