@@ -10,6 +10,7 @@
             $name = $isKelompok ? $item->name : $item->displayName();
             $kelas = $isKelompok ? $item->kelas?->name : $item->displayKelas();
             $score = $item->scoreOn100();
+            $pr = $item->progress;
             $showUrl = $isKelompok
                 ? route('admin.leaderboard.kelompok.show', $item)
                 : route('admin.leaderboard.individu.show', $item);
@@ -28,10 +29,23 @@
                 <div class="lb-sub">
                     {{ $kelas ?? '-' }} &middot; {{ $item->quiz?->title }}
                 </div>
+                <div class="lb-stats">
+                    <span class="lb-chip ok" title="Jawaban benar"><i class="fa-solid fa-check"></i> {{ $pr['correct'] }} {{ $pr['correct_label'] }}</span>
+                    <span class="lb-chip bad" title="Jawaban salah"><i class="fa-solid fa-xmark"></i> {{ $pr['wrong'] }} {{ $pr['wrong_label'] }}</span>
+                    <span class="lb-chip" title="Sudah dikerjakan"><i class="fa-solid fa-pen"></i> {{ $pr['answered'] }}/{{ $pr['total'] }} {{ $pr['unit'] }} dijawab</span>
+                    <span class="lb-chip {{ $pr['remaining'] > 0 ? 'todo' : '' }}" title="Belum dikerjakan"><i class="fa-regular fa-circle"></i> {{ $pr['remaining'] }} belum</span>
+                    @if ($pr['finished'])
+                        <span class="lb-chip done">Selesai</span>
+                    @else
+                        <span class="lb-chip live">Sedang mengerjakan</span>
+                    @endif
+                </div>
                 <div class="lb-bar"><i style="width: {{ max(0, min(100, $score)) }}%;"></i></div>
             </div>
             <div class="lb-pts">{{ rtrim(rtrim(number_format($score, 1), '0'), '.') }}<small>/100</small></div>
-            <div class="lb-time"><i class="fa-regular fa-clock"></i> {{ $fmtTime($item->durationSeconds()) }}</div>
+            <div class="lb-time">
+                @if ($pr['finished'])<i class="fa-regular fa-clock"></i> {{ $fmtTime($item->durationSeconds()) }}@else<span class="lb-playing">Playing</span>@endif
+            </div>
             <div class="lb-actions">
                 <a href="{{ $showUrl }}" class="btn btn-cyan btn-sm" title="Lihat detail jawaban"><i class="fa-solid fa-list-check"></i> Detail</a>
                 <form method="POST" action="{{ $deleteUrl }}"

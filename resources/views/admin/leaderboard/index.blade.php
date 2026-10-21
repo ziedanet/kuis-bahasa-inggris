@@ -26,6 +26,14 @@
     .lb-pts small { font-size: .8rem; color: var(--ink-soft); }
     .lb-time { font-weight: 800; color: var(--ink-soft); font-size: .92rem; min-width: 70px; text-align: right; }
     .lb-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; min-width: 120px; }
+    .lb-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lb-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); font-size: .74rem; font-weight: 800; }
+    .lb-chip.ok { background: rgba(22,163,74,.15); color: #16a34a; }
+    .lb-chip.bad { background: rgba(220,38,38,.14); color: #dc2626; }
+    .lb-chip.todo { background: rgba(245,158,11,.18); color: #b45309; }
+    .lb-chip.done { background: var(--palm); color: #fff; }
+    .lb-chip.live { background: var(--ocean); color: #fff; }
+    .lb-playing { color: var(--ocean); font-weight: 900; animation: lbpulse 2s infinite; }
     .lb-empty, .lb-more { text-align: center; color: var(--ink-soft); font-weight: 800; padding: 18px; }
     .lb-note { color: var(--ink-soft); font-size: .88rem; font-weight: 700; margin-bottom: 16px; }
     .lb-live { display: flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 800; color: var(--ink-soft); }
@@ -88,7 +96,7 @@
     </div>
 
     <p class="lb-note">
-        Hanya yang sudah menyelesaikan seluruh soal masuk peringkat. Urutan: skor tertinggi dulu, kalau skor sama yang waktu pengerjaannya paling singkat menang.
+        Peringkat live: skor langsung bertambah sejak peserta mulai menjawab, lengkap dengan jumlah benar, salah, soal yang sudah dijawab, dan yang belum. Urutan: skor tertinggi dulu, kalau sama yang selesai paling cepat menang.
     </p>
 
     <div id="lb-container">

@@ -35,7 +35,7 @@ class LeaderboardController extends Controller
 
         $data = compact('rows', 'waiting', 'waitingTotal', 'quizList', 'tipe', 'quizId');
 
-        // Dipanggil JS tiap 30 detik: kirim isi papan saja, tanpa layout.
+        // Dipanggil JS tiap 10 detik: kirim isi papan saja, tanpa layout.
         if ($request->boolean('partial')) {
             return view('admin.leaderboard._rows', $data);
         }
@@ -66,7 +66,7 @@ class LeaderboardController extends Controller
      */
     public function showKelompok(QuizGroup $group)
     {
-        $group->load(['quiz', 'kelas'])->loadSum('answers', 'score');
+        $group->load(['quiz' => fn ($q) => $q->withCount('images'), 'kelas'])->loadSum('answers', 'score');
 
         $answers = $group->answers()
             ->with('image.words')
@@ -86,7 +86,7 @@ class LeaderboardController extends Controller
      */
     public function showIndividu(IndividuAttempt $attempt)
     {
-        $attempt->load(['quiz', 'siswa.kelas', 'kelas'])->loadSum('answers', 'score');
+        $attempt->load(['quiz' => fn ($q) => $q->withCount('soalIndividu'), 'siswa.kelas', 'kelas'])->loadSum('answers', 'score');
 
         $answers = $attempt->answers()
             ->with(['soal.opsi', 'opsi'])
@@ -139,18 +139,24 @@ class LeaderboardController extends Controller
         // Urutan & tampilan skor pakai scoreOn100() (0-100), bukan skor mentah —
         // supaya kuis yang jumlah soalnya beda-beda tetap adil dibandingkan,
         // termasuk waktu filter "Semua Kuis" yang gabung banyak kuis sekaligus.
-        $rows = QuizGroup::with(['quiz', 'kelas'])
+        // Live: kelompok yang sudah mulai menjawab (walau belum selesai) langsung masuk
+        // peringkat dengan skor sementara. Yang belum menjawab apa pun tampil di bawah.
+        $rows = QuizGroup::with(['quiz' => fn ($q) => $q->withCount('images'), 'kelas'])
             ->withSum('answers', 'score')
-            ->whereNotNull('finished_at')
+            ->withSum('answers', 'correct_count')
+            ->withCount('answers')
+            ->where(fn ($query) => $query->whereNotNull('finished_at')->orHas('answers'))
             ->whereHas('quiz', fn ($query) => $query->where('is_kelompok', true))
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
             ->get()
+            ->each(fn (QuizGroup $g) => $g->setAttribute('progress', $this->groupProgress($g)))
             ->sort(fn (QuizGroup $a, QuizGroup $b) => $this->compare($a, $b))
             ->values();
 
-        // Akun kelompok yang belum selesai: "Waiting" (belum mulai) atau "Playing" (masih jalan).
+        // Akun kelompok tanpa jawaban sama sekali: "Waiting" (belum mulai) atau "Playing" (sudah masuk kuis).
         $playing = QuizGroup::whereNull('finished_at')
             ->whereNotNull('kelompok_id')
+            ->whereDoesntHave('answers')
             ->whereHas('quiz', fn ($query) => $query->where('is_kelompok', true))
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
             ->pluck('id', 'kelompok_id');
@@ -177,18 +183,23 @@ class LeaderboardController extends Controller
      */
     private function individuBoard($quizId): array
     {
-        $rows = IndividuAttempt::with(['quiz', 'siswa.kelas', 'kelas'])
+        $rows = IndividuAttempt::with(['quiz' => fn ($q) => $q->withCount('soalIndividu'), 'siswa.kelas', 'kelas'])
             ->withSum('answers', 'score')
-            ->whereNotNull('finished_at')
+            ->withCount([
+                'answers',
+                'answers as correct_answers_count' => fn ($q) => $q->where('is_correct', true),
+            ])
+            ->where(fn ($query) => $query->whereNotNull('finished_at')->orHas('answers'))
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
             ->get()
+            ->each(fn (IndividuAttempt $a) => $a->setAttribute('progress', $this->individuProgress($a)))
             ->sort(fn (IndividuAttempt $a, IndividuAttempt $b) => $this->compare($a, $b))
             ->values();
 
-        // Peserta individu tidak punya daftar akun (tanpa login), jadi baris redup
-        // hanya berisi yang sedang mengerjakan ("Playing"), bisa direset kalau macet.
+        // Baris redup: peserta yang sudah masuk tapi belum menjawab satu soal pun.
         $playingQuery = IndividuAttempt::with(['siswa.kelas', 'kelas'])
             ->whereNull('finished_at')
+            ->whereDoesntHave('answers')
             ->when($quizId, fn ($query) => $query->where('quiz_id', $quizId))
             ->orderBy('created_at');
 
@@ -201,6 +212,48 @@ class LeaderboardController extends Controller
         ]);
 
         return [$rows, $waiting, $waitingTotal];
+    }
+
+    /**
+     * Statistik live satu kelompok. Skor kelompok dihitung per KATA (5 kata per foto),
+     * jadi benar/salah dilaporkan dalam kata, dan progres dalam foto.
+     */
+    private function groupProgress(QuizGroup $g): array
+    {
+        $total = (int) ($g->quiz?->images_count ?? 0);
+        $answered = (int) $g->answers_count;
+        $correct = (int) $g->answers_sum_correct_count;
+
+        return [
+            'unit' => 'foto',
+            'total' => $total,
+            'answered' => $answered,
+            'remaining' => max(0, $total - $answered),
+            'correct' => $correct,
+            'wrong' => $answered * 5 - $correct,
+            'correct_label' => 'kata benar',
+            'wrong_label' => 'kata salah',
+            'finished' => (bool) $g->finished_at,
+        ];
+    }
+
+    private function individuProgress(IndividuAttempt $a): array
+    {
+        $total = (int) ($a->quiz?->soal_individu_count ?? 0);
+        $answered = (int) $a->answers_count;
+        $correct = (int) $a->correct_answers_count;
+
+        return [
+            'unit' => 'soal',
+            'total' => $total,
+            'answered' => $answered,
+            'remaining' => max(0, $total - $answered),
+            'correct' => $correct,
+            'wrong' => $answered - $correct,
+            'correct_label' => 'benar',
+            'wrong_label' => 'salah',
+            'finished' => (bool) $a->finished_at,
+        ];
     }
 
     /** Skor tertinggi dulu; kalau seri, waktu pengerjaan tersingkat menang. */

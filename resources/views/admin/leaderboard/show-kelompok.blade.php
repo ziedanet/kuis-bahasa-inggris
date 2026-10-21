@@ -18,6 +18,9 @@
     $predikat = $group->predikat();
     $seconds = $group->durationSeconds();
     $time = $seconds === null ? '--:--' : sprintf('%02d:%02d', intdiv($seconds, 60), $seconds % 60);
+    $fotoTotal = (int) ($group->quiz?->images_count ?? 0);
+    $kataBenar = (int) $answers->sum('correct_count');
+    $kataSalah = $answers->count() * 5 - $kataBenar;
 @endphp
 
 <div class="panel-card">
@@ -30,6 +33,10 @@
             <div class="dt-label">Predikat</div>
             <span class="badge @if($predikat === 'Sangat Baik') badge-lime @elseif($predikat === 'Baik') badge-cyan @elseif($predikat === 'Cukup') badge-yellow @else badge-pink @endif">{{ $predikat }}</span>
         </div>
+        <div><div class="dt-label">Kata benar</div><div class="dt-value">{{ $kataBenar }}</div></div>
+        <div><div class="dt-label">Kata salah</div><div class="dt-value">{{ $kataSalah }}</div></div>
+        <div><div class="dt-label">Foto dijawab</div><div class="dt-value">{{ $answers->count() }}/{{ $fotoTotal }}</div></div>
+        <div><div class="dt-label">Foto belum</div><div class="dt-value">{{ max(0, $fotoTotal - $answers->count()) }}</div></div>
         <div><div class="dt-label">Waktu</div><div class="dt-value">{{ $time }}</div></div>
     </div>
 </div>

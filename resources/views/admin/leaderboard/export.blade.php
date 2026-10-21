@@ -42,7 +42,7 @@
 
 <h1>Leaderboard {{ $isKelompok ? 'Kelompok' : 'Individu' }}</h1>
 <p class="meta">
-    {{ $quizTitle ?? 'Semua Kuis' }} &middot; Dicetak {{ now()->translatedFormat('d F Y, H:i') }} &middot; {{ $rows->count() }} peserta selesai
+    {{ $quizTitle ?? 'Semua Kuis' }} &middot; Dicetak {{ now()->translatedFormat('d F Y, H:i') }} &middot; {{ $rows->count() }} peserta
 </p>
 
 <table>
@@ -53,6 +53,11 @@
             <th>Kelas</th>
             <th>Kuis</th>
             <th class="num">Skor (0-100)</th>
+            <th class="num">Benar</th>
+            <th class="num">Salah</th>
+            <th class="num">Dijawab</th>
+            <th class="num">Belum</th>
+            <th>Status</th>
             <th>Predikat</th>
             <th class="num">Waktu</th>
         </tr>
@@ -69,16 +74,21 @@
                 <td>{{ $kelas ?? '-' }}</td>
                 <td>{{ $item->quiz?->title }}</td>
                 <td class="num"><strong>{{ number_format($item->scoreOn100(), 1) }}</strong></td>
+                <td class="num">{{ $item->progress['correct'] }}</td>
+                <td class="num">{{ $item->progress['wrong'] }}</td>
+                <td class="num">{{ $item->progress['answered'] }}/{{ $item->progress['total'] }}</td>
+                <td class="num">{{ $item->progress['remaining'] }}</td>
+                <td>{{ $item->progress['finished'] ? 'Selesai' : 'Mengerjakan' }}</td>
                 <td>{{ $item->predikat() }}</td>
                 <td class="num">{{ $fmt($item->durationSeconds()) }}</td>
             </tr>
         @empty
-            <tr><td colspan="7" class="empty">Belum ada peserta yang menyelesaikan kuis ini.</td></tr>
+            <tr><td colspan="12" class="empty">Belum ada peserta yang mulai mengerjakan kuis ini.</td></tr>
         @endforelse
     </tbody>
 </table>
 
-<p class="foot">Urutan: skor tertinggi dulu; jika skor sama, waktu pengerjaan tersingkat menang.</p>
+<p class="foot">Kelompok: benar/salah dihitung per kata (5 kata per foto). Individu: per soal. Urutan: skor tertinggi dulu; jika sama, waktu tersingkat.</p>
 
 <script>
     // Buka dialog cetak otomatis setelah font termuat.

@@ -32,6 +32,9 @@
             <span class="badge @if($predikat === 'Sangat Baik') badge-lime @elseif($predikat === 'Baik') badge-cyan @elseif($predikat === 'Cukup') badge-yellow @else badge-pink @endif">{{ $predikat }}</span>
         </div>
         <div><div class="dt-label">Benar</div><div class="dt-value">{{ $correctTotal }}/{{ $answers->count() }}</div></div>
+        <div><div class="dt-label">Salah</div><div class="dt-value">{{ $answers->count() - $correctTotal }}</div></div>
+        <div><div class="dt-label">Dijawab</div><div class="dt-value">{{ $answers->count() }}/{{ $attempt->quiz?->soal_individu_count ?? 0 }}</div></div>
+        <div><div class="dt-label">Belum</div><div class="dt-value">{{ max(0, ($attempt->quiz?->soal_individu_count ?? 0) - $answers->count()) }}</div></div>
         <div><div class="dt-label">Waktu</div><div class="dt-value">{{ $time }}</div></div>
     </div>
 </div>
