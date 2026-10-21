@@ -78,7 +78,13 @@
             <i class="fa-solid fa-ranking-star" style="color: var(--ocean);"></i>
             Peringkat {{ $tipe === 'kelompok' ? 'Kelompok' : 'Individu' }}
         </h3>
-        <span class="lb-live" aria-live="off"><span class="lb-dot"></span> Auto-refresh 30 detik &middot; <span id="lb-updated">sekarang</span></span>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <span class="lb-live" aria-live="off"><span class="lb-dot" id="lb-dot"></span> <span id="lb-state">Auto-refresh 10 detik</span> &middot; <span id="lb-updated">sekarang</span></span>
+            <button type="button" class="btn btn-sun btn-sm" id="lb-toggle"><i class="fa-solid fa-pause" id="lb-toggle-icon"></i> <span id="lb-toggle-text">Stop refresh</span></button>
+            <a href="{{ route('admin.leaderboard.export', request()->query()) }}" target="_blank" rel="noopener" class="btn btn-cyan btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> Export PDF
+            </a>
+        </div>
     </div>
 
     <p class="lb-note">
@@ -94,12 +100,20 @@
 @push('scripts')
 <script>
 (function () {
+    const INTERVAL = 10000;
     const container = document.getElementById('lb-container');
     const stamp = document.getElementById('lb-updated');
+    const stateEl = document.getElementById('lb-state');
+    const dot = document.getElementById('lb-dot');
+    const toggle = document.getElementById('lb-toggle');
+    const toggleIcon = document.getElementById('lb-toggle-icon');
+    const toggleText = document.getElementById('lb-toggle-text');
     const params = new URLSearchParams(window.location.search);
     params.set('partial', '1');
     const url = window.location.pathname + '?' + params.toString();
     const pad = (n) => String(n).padStart(2, '0');
+    let timer = null;
+    let running = true;
 
     function mark() {
         const d = new Date();
@@ -110,16 +124,31 @@
         // Jangan timpa halaman kalau tab sedang tidak terlihat.
         if (document.hidden) return;
         try {
-            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', cache: 'no-store' });
             if (res.redirected || !res.ok) { window.location.reload(); return; }
             container.innerHTML = await res.text();
             mark();
         } catch (e) { /* koneksi putus sebentar: coba lagi di putaran berikutnya */ }
     }
 
+    function render() {
+        stateEl.textContent = running ? 'Auto-refresh 10 detik' : 'Refresh dihentikan';
+        dot.style.animationPlayState = running ? 'running' : 'paused';
+        dot.style.background = running ? '' : 'var(--ink-soft)';
+        toggleIcon.className = running ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        toggleText.textContent = running ? 'Stop refresh' : 'Lanjutkan refresh';
+    }
+
+    function start() { running = true; clearInterval(timer); timer = setInterval(refresh, INTERVAL); render(); }
+    function stop() { running = false; clearInterval(timer); render(); }
+
+    toggle.addEventListener('click', () => {
+        if (running) { stop(); } else { refresh(); start(); }
+    });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && running) refresh(); });
+
     mark();
-    setInterval(refresh, 30000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    start();
 })();
 </script>
 @endpush

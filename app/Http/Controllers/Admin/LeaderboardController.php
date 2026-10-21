@@ -45,6 +45,24 @@ class LeaderboardController extends Controller
     }
 
     /**
+     * Halaman cetak peringkat (Save as PDF lewat dialog cetak browser). Mengikuti
+     * filter tipe & kuis yang sedang aktif di Leaderboard; hanya yang sudah selesai.
+     */
+    public function export(Request $request)
+    {
+        $tipe = $request->query('tipe') === 'individu' ? 'individu' : 'kelompok';
+        $quizId = $request->query('quiz_id');
+
+        [$rows] = $tipe === 'kelompok'
+            ? $this->kelompokBoard($quizId)
+            : $this->individuBoard($quizId);
+
+        $quizTitle = $quizId ? Quiz::find($quizId)?->title : null;
+
+        return view('admin.leaderboard.export', compact('rows', 'tipe', 'quizTitle'));
+    }
+
+    /**
      * Rincian jawaban satu kelompok: kata mana yang benar & salah per foto.
      */
     public function showKelompok(QuizGroup $group)

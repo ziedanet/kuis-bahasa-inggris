@@ -55,6 +55,13 @@ class UserAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Opsional: kembali ke halaman asal (dipakai menu logout di header Travel Quest).
+        // Hanya path internal yang diterima, supaya tidak jadi open redirect.
+        $returnTo = (string) $request->input('return_to', '');
+        if ($returnTo !== '' && str_starts_with($returnTo, '/') && ! str_starts_with($returnTo, '//')) {
+            return redirect($returnTo);
+        }
+
         return redirect()->route('quiz.home');
     }
 }
